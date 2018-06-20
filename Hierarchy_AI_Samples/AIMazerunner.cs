@@ -28,10 +28,14 @@ public class AIMazerunner : MonoBehaviour
 
     #endregion
 
+	#region Util Properties
+	
     public Transform Trans { get; protected set; }
     public bool FoundGoal { get; protected set; }
     public float Speed { get { return speed; } set { speed = value; } }
 
+	#endregion
+	
     #region  Memory Properties
 
     public TileType[,] MazeMemory { get; protected set; }
@@ -42,6 +46,12 @@ public class AIMazerunner : MonoBehaviour
 
     #endregion
 
+	/// <summary>
+	/// Resets the AIs values to its starting state.
+	/// </summary>
+	/// <param name="position"> Tile position to use as start position. </param>
+	/// <param name="width"> Maze tile width. </param>
+	/// <param name="height"> Maze tile height. </param>
     public virtual void Reset(Vector2 position, int width, int height)
     {
         // Standard
@@ -128,6 +138,9 @@ public class AIMazerunner : MonoBehaviour
         }
     }
 
+	/// <summary>
+	/// Will move the AI to the next tile at a predetermined speed.
+	/// </summary>
     protected virtual void Move()
     {
         switch (currentDirection)
@@ -175,6 +188,9 @@ public class AIMazerunner : MonoBehaviour
 
     #region Sight Methods
 
+	/// <summary>
+	/// Sight method to check what the AI sees in each direction.
+	/// </summary>
     protected void CheckAdjacentTiles()
     {
         CheckAdjacentTile(UtilityFunctions.GetLeftDirection(currentDirection));
@@ -183,6 +199,10 @@ public class AIMazerunner : MonoBehaviour
         CheckAdjacentTile(UtilityFunctions.GetBackDirection(currentDirection));
     }
 
+	/// <summary>
+	/// Sight method to check what the AI sees in a specified direction.
+	/// </summary>
+	/// <param name="dir"> The direction to check. </param>
     protected void CheckAdjacentTile(Direction dir)
     {
         Vector2 tileWorldPos = GetNextDestination(dir);
@@ -217,6 +237,11 @@ public class AIMazerunner : MonoBehaviour
         }
     }
 
+	/// <summary>
+	/// Sight method to check what the AI can see down a corridor in a specified direction.
+	/// </summary>
+	/// <param name="tileWorldPos"> Start position of the corridor. </param>
+	/// <param name="dir"> The direction to check. </param>
     protected void CheckCorridor(Vector2 tileWorldPos, Direction dir)
     {
         TileType type = MazeHandler.Instance.GetNextTile(tileWorldPos, dir);
@@ -256,6 +281,11 @@ public class AIMazerunner : MonoBehaviour
         }
     }
 
+	/// <summary>
+	/// Checks whether the AI can see a specific tile from its current position.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the tile to be checked. </param>
+	/// <returns> True if the AI can see the tile. </returns>
     protected bool CanSeeTile(Vector2 tileWorldPos)
     {
         if (tileWorldPos.x == Trans.position.x)
@@ -320,6 +350,13 @@ public class AIMazerunner : MonoBehaviour
 
     #region Destination Methods
 
+	/// <summary>
+	/// Find a path to the closest untraveled junction.
+	/// </summary>
+	/// <param name="startWorldPos"> The starting position of the check. Usually AIs currect position. </param>
+	/// <param name="currDir"> Current heading direction. </param>
+	/// <param name="nextDir"> Current next direction. </param>
+	/// <returns> A path to the closest untraveled junction. </returns>
     protected List<Vector2> FindPathToClosestUntravelled(Vector2 startWorldPos, Direction currDir, out Direction nextDir)
     {
         List<List<Vector2>> listOfPaths = new List<List<Vector2>>();
@@ -492,6 +529,9 @@ public class AIMazerunner : MonoBehaviour
         return null;
     }
 
+	/// <summary>
+	/// Finds and sets the next destination, using the left hand rule.
+	/// </summary>
     protected void FindNextDestination()
     {
         Vector2 tileWorldPos = GetNextDestination(UtilityFunctions.GetLeftDirection(currentDirection));
@@ -525,11 +565,22 @@ public class AIMazerunner : MonoBehaviour
         isMoving = true;
     }
 
+	/// <summary>
+	/// Finds the next destination from a tile in a given direction.
+	/// </summary>
+	/// <param name="direction"> The direction to find the next destination in. </param>
+	/// <returns> The next position to move to. </returns>
     protected Vector2 GetNextDestination(Direction direction)
     {
         return GetNextDestination(destination, direction);
     }
 
+	/// <summary>
+	/// Find the next destination from a tile in a given direction.
+	/// </summary>
+	/// <param name="tileWorldPos"> The world position of the tile to check from. </param>
+	/// <param name="direction"> The direction to find the next destination in. </param>
+	/// <returns> The next position to move to. </returns>
     protected Vector2 GetNextDestination(Vector2 tileWorldPos, Direction direction)
     {
         switch (direction)
@@ -551,6 +602,12 @@ public class AIMazerunner : MonoBehaviour
 
     #region Check Methods
 
+	/// <summary>
+	/// Gets the position of the next tile in a specified direction.
+	/// </summary>
+	/// <param name="tileWorldPos"> The world position of the tile to check from. </param>
+	/// <param name="direction"> Direction to check in. </param>
+	/// <returns> Position of the next tile. </returns>
     public Vector2 GetNextTileFromMemory(Vector2 tileWorldPos, Direction direction)
     {
         switch (direction)
@@ -576,6 +633,10 @@ public class AIMazerunner : MonoBehaviour
         return new Vector2(0.5f, 0.5f);
     }
 
+	/// <summary>
+	/// Gets the position of the goal from memory, will return a default value if goal hasn't been found.
+	/// </summary>
+	/// <returns> World position of the goal. </returns>
     protected Vector2 GetGoalWorldPos()
     {
         Vector2 position = new Vector2(0.5f, 0.5f);
@@ -588,6 +649,10 @@ public class AIMazerunner : MonoBehaviour
         return position;
     }
 
+	/// <summary>
+	/// Checks to see if the goal has been found.
+	/// </summary>
+	/// <returns> True if goal has been found. </returns>
     protected bool HasFoundGoal()
     {
         for (int x = 0; x < MazeWidth; x++)
@@ -598,6 +663,12 @@ public class AIMazerunner : MonoBehaviour
         return false;
     }
 
+	/// <summary>
+	/// Gets the direction that the to tile is from the from tile.
+	/// </summary>
+	/// <param name="from"> The start tile for the direction. </param>
+	/// <param name="to"> The end tile for the direction. </param>
+	/// <returns> The direction the to tile is in from the from tile. </returns>
     protected Direction GetDirectionToTile(Vector2 from, Vector2 to)
     {
         Direction direction = Direction.North;
@@ -618,12 +689,20 @@ public class AIMazerunner : MonoBehaviour
 
     #region Pathing Methods
 
+	
+	/// <summary>
+	/// Prints the current path to console.
+	/// </summary>
+	/// <param name="worldPos"> The path. </param>
     protected void PrintPath(List<Vector2> worldPos)
     {
         for (int i = 0; i < worldPos.Count; i++)
             Debug.Log("Tile " + i + ": " + worldPos[i].x + ", " + worldPos[i].y);
     }
 
+	/// <summary>
+	/// If the AI has a path to follow, will set the next destination in the path.
+	/// </summary>
     protected virtual void FollowPath()
     {
         Vector2 newDest = currPath[0];
@@ -654,6 +733,13 @@ public class AIMazerunner : MonoBehaviour
         currPath.RemoveAt(0);
     }
 
+	/// <summary>
+	/// Will find a path to the next left turn in a given direction.
+	/// </summary>
+	/// <param name="currDirection"> Current direction the AI is traveling. </param>
+	/// <param name="endDirection"> Direction the AI will be traveling at the end. </param>
+	/// <param name="recursion"> Whether this is a first run or a recursion. </param>
+	/// <returns> A path to the next left junction. </returns>
     protected List<Vector2> FindNextLeftTurn(Direction currDirection, out Direction endDirection, bool recursion)
     {
         Vector2 currLoc = destination;
@@ -741,6 +827,14 @@ public class AIMazerunner : MonoBehaviour
         return null;
     }
 
+	
+	/// <summary>
+	/// Gets all valid travel directions that haven't already been traveled, otherwise all directions if they have all been traveled.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the tile to be checked. </param>
+	/// <param name="previousTileWorldPos"> Previous world position the AI came from. </param>
+	/// <param name="validDir"> A list of valid travel directions. </param>
+	/// <returns> True if all directions have already been travelled. </returns>
     protected bool GetValidDirectionsFromMemory(Vector2 tileWorldPos, Vector2 previousTileWorldPos, out List<Vector2> validDir)
     {
         validDir = UtilityFunctions.GetValidDirections(tileWorldPos, previousTileWorldPos, MazeWidth, MazeHeight);
@@ -769,6 +863,11 @@ public class AIMazerunner : MonoBehaviour
 
     #region Puzzle Solving Methods
 
+	/// <summary>
+	/// If a lever is seen the AI will try to path to it if it hasn't already been pulled.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the lever. </param>
+	/// <returns> True if it can find a path to the lever. </returns>
     protected virtual bool SeenLever(Vector2 tileWorldPos)
     {
         if (MazeMemory[(int)tileWorldPos.x, -(int)tileWorldPos.y] == TileType.Lever && !isPathingToLever && 
@@ -784,6 +883,11 @@ public class AIMazerunner : MonoBehaviour
         return false;
     }
 
+	/// <summary>
+	/// If a door is seen the AI will try to path to the connecting lever.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the door. </param>
+	/// <returns> True if it has found the connecting lever and can path to it. </returns>
     protected virtual bool SeenDoor(Vector2 tileWorldPos)
     {
         if (MazeMemory[(int)tileWorldPos.x, -(int)tileWorldPos.y] == TileType.Door && !isPathingToLever && 
@@ -803,12 +907,20 @@ public class AIMazerunner : MonoBehaviour
         return false;
     }
 
+	/// <summary>
+	/// Action of pulling a lever.
+	/// </summary>
     protected virtual void PullLever()
     {
         if (MazeMemory[(int)destination.x, -(int)destination.y] == TileType.Lever)
             MazeHandler.Instance.PullLever(destination);
     }
 
+	/// <summary>
+	/// Check to see if the AI has found the connecting puzzle element.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the puzzle tile. </param>
+	/// <returns> True if the connecting puzzle element has been found. </returns>
     protected bool HasFoundConnectingPuzzle(Vector2 tileWorldPos)
     {
         if (MazeHandler.Instance.FindConnectingPuzzleEle(MazeMemory, tileWorldPos).x == 0.5f)

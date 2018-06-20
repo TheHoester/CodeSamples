@@ -14,6 +14,9 @@ namespace Code.AI
         public int BlockId { get; private set; }
         public List<SpawnGroup> SpawnGroups { get; private set; }
 
+        /// <summary>
+        /// Initializes the SpawnGroupHandler gameobject.
+        /// </summary>
         public void Init(int id)
         {
             BlockId = id;
@@ -23,6 +26,11 @@ namespace Code.AI
                 SpawnGroups.Add(group);
         }
 
+        /// <summary>
+        /// Will create the complete set of spawn groups for the associated block.
+        /// </summary>
+        /// <param name="bManager"> Block manager that the spawns are located in. </param>
+        /// <param name="tilesPerGroup"> Number of tiles for each group to spawn. </param>
         public void CreateSpawnpoints(BlockManager bManager, int tilesPerGroup)
         {
             BlockId = bManager.IdTag;
@@ -49,6 +57,13 @@ namespace Code.AI
             }
         }
 
+        /// <summary>
+        /// Will find a random place within the block to spawn a group.
+        /// </summary>
+        /// <param name="bManager"> Block manager that the spawns are located in. </param>
+        /// <param name="recursionCount"> The number of times this method has recursed. </param>
+        /// <param name="yPos"> The y position they will spawn. </param>
+        /// <returns> Position that the group with spawn. </returns>
         private Vector3 CreateNewSpawnpoint(BlockManager bManager, int recursionCount, float yPos)
         {
             recursionCount++;
@@ -82,6 +97,12 @@ namespace Code.AI
                 return CreateNewSpawnpoint(bManager, recursionCount, yPos);
         }
 
+        /// <summary>
+        /// Gets a list of the colliders that are within the spawnpoints spawn locations.
+        /// </summary>
+        /// <param name="centre"> Centre of the spawn group. </param>
+        /// <param name="radius"> Radius the spawns will spawn from the centre. </param>
+        /// <returns> List of colliders that are within spawn locations. </returns>
         private List<Collider> CollidersInBoxRange(Vector3 centre, float radius)
         {
             Collider[] northBox = Physics.OverlapBox(new Vector3(centre.x, centre.y, centre.z + radius), new Vector3(radius, 1.0f, 0.08f));
@@ -199,6 +220,11 @@ namespace Code.AI
             return uniqueColliders;
         }
 
+        /// <summary>
+        /// Translates the information in the SpawnGroupData class provided.
+        /// </summary>
+        /// <param name="blockId"> Id of the block the handler is associated with. </param>
+        /// <param name="spawnData"> The data to be translated. </param>
         public void LoadData(int blockId, SpawnGroupData[] spawnData)
         {
             if (spawnData == null)
@@ -215,6 +241,9 @@ namespace Code.AI
             }
         }
 
+        /// <summary>
+        /// Resets and reloads all the data in from its child markers.
+        /// </summary>
         public void ReloadData()
         {
             BlockId = int.Parse(gameObject.name);
@@ -227,6 +256,9 @@ namespace Code.AI
             }
         }
 
+        /// <summary>
+        /// Adds a new spawn group to the level and data structure.
+        /// </summary>
         public void AddSpawnGroup()
         {
             BlockManager bManager = CityManager.Instance.GetBlockManager(BlockId);
@@ -241,6 +273,9 @@ namespace Code.AI
             }
         }
 
+        /// <summary>
+        /// Removes a new spawn group from the level and data structure.
+        /// </summary>
         public void RemoveSpawnGroup(SpawnGroup group)
         {
             for (int i = 0; i < SpawnGroups.Count; i++)

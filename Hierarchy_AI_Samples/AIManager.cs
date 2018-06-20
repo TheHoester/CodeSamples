@@ -10,6 +10,9 @@ public class AIManager : MonoBehaviour
     private List<Request> requestList;
     private List<BlueprintUpdate> blueprintUpdateList;
 
+	/// <summary>
+	/// Resets the AIs values to its starting state.
+	/// </summary>
     public void Reset()
     {
         blueprint = MazeHandler.Instance.GetBlueprint();
@@ -69,6 +72,10 @@ public class AIManager : MonoBehaviour
         }
 	}
 
+	/// <summary>
+	/// Will try to get the position of the goal.
+	/// </summary>
+	/// <returns> Position of the goal, otherwise a default value if no goal is found. </returns>
     public Vector2 GetGoalTileWorldPos()
     {
         for (int x = 0; x < mazeWidth; x++)
@@ -79,16 +86,30 @@ public class AIManager : MonoBehaviour
         return new Vector2(0.5f, 0.5f);
     }
 
+	/// <summary>
+	/// Accessor for the Maze Runner to request information.
+	/// </summary>
+	/// <param name="request"> Request information from the Maze Runner. </param>
     public void MakeRequest(Request request)
     {
         requestList.Add(request);
     }
 
+	/// <summary>
+	/// Accessor for the Maze Runner to provide information about the maze.
+	/// </summary>
+	/// <param name="update"> Update information from the Maze Runner. </param>
     public void SendBlueprintUpdate(BlueprintUpdate update)
     {
         blueprintUpdateList.Add(update);
     }
 
+	/// <summary>
+	/// Updates information within the blueprint.
+	/// </summary>
+	/// <param name="xPos"> X position of the tile in the blueprint. </param>
+	/// <param name="yPos"> Y position of the tile in the blueprint. </param>
+	/// <param name="type"> New tile type of the tile. </param>
     private void UpdateBlueprint(int xPos, int yPos, TileType type)
     {
         blueprint[xPos, yPos] = type;

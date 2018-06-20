@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 public static class UtilityFunctions
 {
+	
+	/// <summary>
+	/// Will compare two vector2s to check if they are the same vector or not.
+	/// </summary>
+	/// <param name="one"> Vector2 to be compared. </param>
+	/// <param name="two"> Vector2 to be compared. </param>
+	/// <returns> True if vectors are the same. </returns>
     public static bool Vector2Compare(Vector2 one, Vector2 two)
     {
         if ((int)one.x == (int)two.x && (int)one.y == (int)two.y)
@@ -11,6 +18,11 @@ public static class UtilityFunctions
             return false;
     }
 
+	/// <summary>
+	/// Will create a copy of a provided list due to lists being passed by reference rather than by value.
+	/// </summary>
+	/// <param name="list"> List to be copied. </param>
+	/// <returns> Copy of the list provided. </returns>
     public static List<T> CopyList<T>(List<T> list)
     {
         List<T> copy = new List<T>();
@@ -22,6 +34,11 @@ public static class UtilityFunctions
 
     #region Direction Methods
 
+	/// <summary>
+	/// Will get the left direction from the direction given.
+	/// </summary>
+	/// <param name="currectDirection"> Current direction the AI is facing. </param>
+	/// <returns> The left direction from direction given. </returns>
     public static Direction GetLeftDirection(Direction currentDirection)
     {
         switch (currentDirection)
@@ -39,6 +56,11 @@ public static class UtilityFunctions
         }
     }
 
+	/// <summary>
+	/// Will get the right direction from the direction given.
+	/// </summary>
+	/// <param name="currectDirection"> Current direction the AI is facing. </param>
+	/// <returns> The right direction from direction given. </returns>
     public static Direction GetRightDirection(Direction currentDirection)
     {
         switch (currentDirection)
@@ -56,6 +78,11 @@ public static class UtilityFunctions
         }
     }
 
+	/// <summary>
+	/// Will get the back direction from the direction given.
+	/// </summary>
+	/// <param name="currectDirection"> Current direction the AI is facing. </param>
+	/// <returns> The back direction from direction given. </returns>
     public static Direction GetBackDirection(Direction currentDirection)
     {
         switch (currentDirection)
@@ -77,11 +104,22 @@ public static class UtilityFunctions
 
     #region Check Methods
 
+	/// <summary>
+	/// Checks whether a tile is walkable.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the tile to be checked. </param>
+	/// <returns> True if the tile is walkable. </returns>
     public static bool IsTileWalkable(Vector2 tileWorldPos)
     {
         return IsTileWalkable(MazeHandler.Instance.GetMazeTileTypes(), tileWorldPos);
     }
 
+	/// <summary>
+	/// Checks whether a tile is walkable.
+	/// </summary>
+	/// <param name="map"> A map of the maze (Usually the memory of the AI). </param>
+	/// <param name="tileWorldPos"> World position of the tile to be checked. </param>
+	/// <returns> True if the tile is walkable. </returns>
     public static bool IsTileWalkable(TileType[,] map, Vector2 tileWorldPos)
     {
         if (tileWorldPos.x == 0.5f)
@@ -94,6 +132,11 @@ public static class UtilityFunctions
             return IsTileWalkable(tileType);
     }
 
+	/// <summary>
+	/// Checks whether a tile is walkable.
+	/// </summary>
+	/// <param name="type"> The type of the tile to be checked. </param>
+	/// <returns> True if the tile is walkable. </returns>
     public static bool IsTileWalkable(TileType type)
     {
         switch (type)
@@ -119,6 +162,13 @@ public static class UtilityFunctions
         }
     }
 
+	/// <summary>
+	/// Checks whether a tile position exists within the current maze.
+	/// </summary>
+	/// <param name="tileWorldPos"> World position of the tile to be checked. </param>
+	/// <param name="mazeWidth"> Tile width of the maze. </param>
+	/// <param name="mazeHeight"> Tile height of the maze. </param>
+	/// <returns> True if the tile is walkable. </returns>
     private static bool IsTileValid(Vector2 tileWorldPos, int mazeWidth, int mazeHeight)
     {
         if (tileWorldPos.x >= 0.0f && tileWorldPos.y <= 0.0f && tileWorldPos.x < mazeWidth && -tileWorldPos.y < mazeHeight)
@@ -131,11 +181,28 @@ public static class UtilityFunctions
 
     #region Pathing Methods
 
+	/// <summary>
+	/// Will try to find a path from the start position to the end position.
+	/// </summary>
+	/// <param name="startWorldPos"> Starting World position of the path. </param>
+	/// <param name="destWorldPos"> End World position of the path. </param>
+	/// <param name="mazeWidth"> Tile width of the maze. </param>
+	/// <param name="mazeHeight"> Tile height of the maze. </param>
+	/// <returns> List of tiles in the path. Empty list if no path found. </returns>
     public static List<Vector2> FindPath(Vector2 startWorldPos, Vector2 destWorldPos, int mazeWidth, int mazeHeight)
     {
         return FindPath(MazeHandler.Instance.GetMazeTileTypes(), startWorldPos, destWorldPos, mazeWidth, mazeHeight);
     }
 
+	/// <summary>
+	/// Will try to find a path from the start position to the end position.
+	/// </summary>
+	/// <param name="map"> The map to check against. </param>
+	/// <param name="startWorldPos"> Starting World position of the path. </param>
+	/// <param name="destWorldPos"> End World position of the path. </param>
+	/// <param name="mazeWidth"> Tile width of the maze. </param>
+	/// <param name="mazeHeight"> Tile height of the maze. </param>
+	/// <returns> List of tiles in the path. Empty list if no path found. </returns>
     public static List<Vector2> FindPath(TileType[,] map, Vector2 startWorldPos, Vector2 destWorldPos, int mazeWidth, int mazeHeight)
     {
         List<List<Vector2>> listOfPaths = new List<List<Vector2>>();
@@ -235,11 +302,28 @@ public static class UtilityFunctions
         return null;
     }
 
+	/// <summary>
+	/// Gets a list of the valid directions the AI can travel.
+	/// </summary>
+	/// <param name="tileWorldPos"> Current world position to check from. </param>
+	/// <param name="previoudWorldPos"> Previous world position that it came from. </param>
+	/// <param name="mazeWidth"> Tile width of the maze. </param>
+	/// <param name="mazeHeight"> Tile height of the maze. </param>
+	/// <returns> List of tiles that are valid. </returns>
     public static List<Vector2> GetValidDirections(Vector2 tileWorldPos, Vector2 previousTileWorldPos, int mazeWidth, int mazeHeight)
     {
         return GetValidDirections(MazeHandler.Instance.GetMazeTileTypes(), tileWorldPos, previousTileWorldPos, mazeWidth, mazeHeight);
     }
 
+	/// <summary>
+	/// Gets a list of the valid directions the AI can travel.
+	/// </summary>
+	/// <param name="map"> The map to check against. </param>
+	/// <param name="tileWorldPos"> Current world position to check from. </param>
+	/// <param name="previoudWorldPos"> Previous world position that it came from. </param>
+	/// <param name="mazeWidth"> Tile width of the maze. </param>
+	/// <param name="mazeHeight"> Tile height of the maze. </param>
+	/// <returns> List of tiles that are valid. </returns>
     public static List<Vector2> GetValidDirections(TileType[,] map, Vector2 tileWorldPos, Vector2 previousTileWorldPos, int mazeWidth, int mazeHeight)
     {
         List<Vector2> validDirections = new List<Vector2>();
@@ -259,6 +343,15 @@ public static class UtilityFunctions
         return validDirections;
     }
 
+	/// <summary>
+	/// Checks if a direction is valid.
+	/// </summary>
+	/// <param name="map"> The map to check against. </param>
+	/// <param name="previousTileWorldPos"> Previous world position it came from. </param>
+	/// <param name="tileCheck"> Tile world position to be checked. </param>
+	/// <param name="mazeWidth"> Tile width of the maze. </param>
+	/// <param name="mazeHeight"> Tile height of the maze. </param>
+	/// <returns> List of tiles that are valid. </returns>
     public static bool IsValidDirection(TileType[,] map, Vector2 previousTileWorldPos, Vector2 tileCheck, int mazeWidth, int mazeHeight)
     {
         if (IsTileValid(tileCheck, mazeWidth, mazeHeight) && IsTileWalkable(map, tileCheck) && !Vector2Compare(tileCheck, previousTileWorldPos))
@@ -267,6 +360,12 @@ public static class UtilityFunctions
             return false;
     }
 
+	/// <summary>
+	/// Compares a new tile with all the tiles currently in the path to see if the path has looped.
+	/// </summary>
+	/// <param name="path"> The path that will be checked. </param>
+	/// <param name="nextTile"> The new tile position. </param>
+	/// <returns> True if there will be a loop. </returns>
     public static bool HasPathLooped(List<Vector2> path, Vector2 nextTile)
     {
         foreach (Vector2 tile in path)
