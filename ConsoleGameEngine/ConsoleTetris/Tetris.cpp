@@ -3,28 +3,21 @@
 /**
  * Constructor
  * @param rend The render engine used to draw to the console.
+ * @param time The time object that is used to track the length of time between frames.
  * @param screenWidth Character width of the screen.
  * @param screenHeight Character height of the screen.
  * @param fieldWidth Character width of the play field.
  * @param fieldHeight Character height of the play field.
  */
-Tetris::Tetris(RenderEngine* rend, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight) : Application(rend, screenWidth, screenHeight)
+Tetris::Tetris(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight) :
+	Application(rend, time, screenWidth, screenHeight), currentPiece(rand() % 7), currentRotation(0), currentX(fieldWidth / 2), currentY(0),
+	rotateHold(false), inputDelay(0.075f), inputCounter(0.075f), canInput(false),
+	movementDelay(1.0f), movementCounter(0.0f), forceDown(false), pieceCount(0)
 {
 	Application::fieldWidth = fieldWidth;
 	Application::fieldHeight = fieldHeight;
 
-	currentPiece = rand() % 7;
-	currentRotation = 0;
-	currentX = fieldWidth / 2;
-	currentY = 0;
-
 	keys = new bool[4];
-	rotateHold = false;
-
-	speed = 20;
-	speedCounter = 0;
-	forceDown = false;
-	pieceCount = 0;
 
 	GenerateAssets();
 }
@@ -41,9 +34,12 @@ Tetris::~Tetris() { }
  */
 bool Tetris::Update()
 {
-	this_thread::sleep_for(50ms);
-	++speedCounter;
-	forceDown = (speedCounter == speed);
+	movementCounter += time->GetDeltaTime();
+	forceDown = (movementCounter >= movementDelay);
+
+	if (inputCounter < inputDelay)
+		inputCounter += time->GetDeltaTime();
+	canInput = (inputCounter >= inputDelay);
 
 	InputHandler();
 	GameLogic();
@@ -68,9 +64,11 @@ void Tetris::Reset()
 	currentY = 0;
 
 	rotateHold = false;
+	inputCounter = 0.075f; 
+	canInput = false;
 
-	speed = 20;
-	speedCounter = 0;
+	movementDelay = 1.0f;
+	movementCounter = 0.0f;
 	forceDown = false;
 	pieceCount = 0;
 	lines.clear();
@@ -89,6 +87,19 @@ void Tetris::InputHandler()
 	keys[1] = InputHandler::IsKeyDown(VK_LEFT);
 	keys[2] = InputHandler::IsKeyDown(VK_DOWN);
 	keys[3] = InputHandler::IsKeyDown('Z');
+
+	bool check = false;
+	for (int i = 0; i < 3; ++i)
+		if (keys[i])
+			check = true;
+
+	if (!check)
+	{
+		inputCounter = inputDelay;
+		canInput = true;
+	}
+	else if (check && canInput)
+		inputCounter = 0.0f;
 }
 
 /**
@@ -98,9 +109,12 @@ void Tetris::InputHandler()
 void Tetris::GameLogic()
 {
 	// Input Handling
-	currentX += (keys[0] && DoesPieceFit(currentPiece, currentRotation, currentX + 1, currentY)) ? 1 : 0; // Right Key Pressed
-	currentX -= (keys[1] && DoesPieceFit(currentPiece, currentRotation, currentX - 1, currentY)) ? 1 : 0; // Left Key Pressed
-	currentY += (keys[2] && DoesPieceFit(currentPiece, currentRotation, currentX, currentY + 1)) ? 1 : 0; // Down Key Pressed
+	if (canInput)
+	{
+		currentX += (keys[0] && DoesPieceFit(currentPiece, currentRotation, currentX + 1, currentY)) ? 1 : 0; // Right Key Pressed
+		currentX -= (keys[1] && DoesPieceFit(currentPiece, currentRotation, currentX - 1, currentY)) ? 1 : 0; // Left Key Pressed
+		currentY += (keys[2] && DoesPieceFit(currentPiece, currentRotation, currentX, currentY + 1)) ? 1 : 0; // Down Key Pressed
+	}
 
 	if (keys[3])
 	{
@@ -124,8 +138,8 @@ void Tetris::GameLogic()
 						field[((currentY + y) * fieldWidth) + (currentX + x)] = currentPiece + 1;
 
 			++pieceCount;
-			if (pieceCount % 10 == 0 && speed >= 10)
-				--speed;
+			if (pieceCount % 10 == 0 && movementDelay >= 0.1f)
+				movementDelay -= 0.1f;
 
 			// Line Detection
 			for (int y = 0; y < ASSET_WIDTH; ++y)
@@ -161,7 +175,7 @@ void Tetris::GameLogic()
 			gameOver = !DoesPieceFit(currentPiece, currentRotation, currentX, currentY);
 		}
 
-		speedCounter = 0;
+		movementCounter = 0.0f;
 	}
 }
 

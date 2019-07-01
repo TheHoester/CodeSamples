@@ -22,4 +22,5 @@ public:
 	~RenderEngine(void);
 
 	void Draw(const wchar_t *characterArray);
+	void Reset(int screenWidth, int screenHeight);
 };

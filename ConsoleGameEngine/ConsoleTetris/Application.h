@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderEngine.h"
+#include "Time.h"
 
 /**
  * Application
@@ -23,6 +24,7 @@ protected:
 	bool* keys;
 
 	// Gameplay
+	Time* time;
 	bool gameOver;
 	int score;
 
@@ -38,9 +40,11 @@ protected:
 	static unsigned char* GenerateFieldOpenTopBox(int fieldWidth, int fieldHeight, int character);
 
 public:
-	Application(RenderEngine* rend, int screenWidth, int screenHeight);
+	Application(RenderEngine* rend, Time* time, int screenWidth, int screenHeight);
 	~Application(void);
-
+	
+	int GetScreenWidth(void) const;
+	int GetScreenHeight(void) const;
 	int GetScore(void) const;
 
 	virtual bool Update(void) = 0;

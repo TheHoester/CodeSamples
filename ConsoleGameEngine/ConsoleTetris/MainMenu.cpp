@@ -6,7 +6,7 @@
  * @param screenWidth Character width of the screen.
  * @param screenHeight Character height of the screen.
  */
-MainMenu::MainMenu(RenderEngine* rend, int screenWidth, int screenHeight) : Application(rend, screenWidth, screenHeight)
+MainMenu::MainMenu(RenderEngine* rend, Time* time, int screenWidth, int screenHeight) : Application(rend, time, screenWidth, screenHeight)
 {
 	keys = new bool[3];
 	inputDelay = 8;
@@ -14,7 +14,7 @@ MainMenu::MainMenu(RenderEngine* rend, int screenWidth, int screenHeight) : Appl
 	calculateInput = false;
 
 	score = 1;
-	numMenuOptions = 2;
+	numMenuOptions = 4;
 
 	GenerateAssets();
 }
@@ -111,6 +111,8 @@ void MainMenu::GenerateAssets()
 {
 	menuOptions[0] = L"Tetris";
 	menuOptions[1] = L"Snake";
+	menuOptions[2] = L"First Person";
+	menuOptions[3] = L"Bouncing Ball";
 
 	int optionLength = 0;
 	for (auto& option : menuOptions)

@@ -6,7 +6,7 @@
  * @param screenWidth Character width of the screen.
  * @param screenHeight Character height of the screen.
  */
-Application::Application(RenderEngine* rend, int screenWidth, int screenHeight): renderer(rend), screenWidth(screenWidth), screenHeight(screenHeight)
+Application::Application(RenderEngine* rend, Time* time, int screenWidth, int screenHeight) : renderer(rend), time(time), screenWidth(screenWidth), screenHeight(screenHeight)
 {
 	screen = new wchar_t[screenWidth * screenHeight];
 	for (int i = 0; i < screenWidth * screenHeight; ++i)
@@ -21,14 +21,16 @@ Application::Application(RenderEngine* rend, int screenWidth, int screenHeight):
  */
 Application::~Application() 
 {
-	delete[] field;
-	delete[] screen;
-	delete[] keys;
+	if (field != NULL)
+		delete[] field;
+	if (screen != NULL)
+		delete[] screen;
+	if (keys != NULL)
+		delete[] keys;
 }
-/**
- * GetScore()
- * @return The games score.
- */
+
+int Application::GetScreenWidth() const { return screenWidth; }
+int Application::GetScreenHeight() const { return screenHeight; }
 int Application::GetScore() const { return score; }
 
 /**
@@ -37,11 +39,16 @@ int Application::GetScore() const { return score; }
  */
 void Application::Reset()
 {
-	delete[] field;
-	delete[] screen;
-	screen = new wchar_t[screenWidth * screenHeight];
-	for (int i = 0; i < screenWidth * screenHeight; ++i)
-		screen[i] = L' ';
+	if (field != NULL)
+		delete[] field;
+
+	if (screen != NULL)
+	{
+		delete[] screen;
+		screen = new wchar_t[screenWidth * screenHeight];
+		for (int i = 0; i < screenWidth * screenHeight; ++i)
+			screen[i] = L' ';
+	}
 
 	gameOver = false;
 	score = 0;

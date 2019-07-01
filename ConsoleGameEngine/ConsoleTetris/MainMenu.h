@@ -13,7 +13,7 @@ class MainMenu : public Application
 {
 private:
 	// Assets
-	wstring menuOptions[2];
+	wstring menuOptions[4];
 	int menuWidth;
 	int menuHeight;
 
@@ -34,7 +34,7 @@ private:
 	void GenerateAssets(void) override;
 
 public:
-	MainMenu(RenderEngine* rend, int screenWidth, int screenHeight);
+	MainMenu(RenderEngine* rend, Time* time, int screenWidth, int screenHeight);
 	~MainMenu(void);
 
 	bool Update(void) override;

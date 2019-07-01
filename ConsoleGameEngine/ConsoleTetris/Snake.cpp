@@ -3,12 +3,14 @@
 /**
  * Constructor
  * @param rend The render engine used to draw to the console.
+ * @param time The time object that is used to track the length of time between frames.
  * @param screenWidth Character width of the screen.
  * @param screenHeight Character height of the screen.
  * @param fieldWidth Character width of the play field.
  * @param fieldHeight Character height of the play field.
  */
-Snake::Snake(RenderEngine* rend, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight) : Application(rend, screenWidth, screenHeight)
+Snake::Snake(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight) : 
+	Application(rend, time, screenWidth, screenHeight), currentDirection(3), movementDelay(0.3f), movementCounter(0.0f), move(false)
 {
 	Application::fieldWidth = fieldWidth;
 	Application::fieldHeight = fieldHeight;
@@ -16,11 +18,6 @@ Snake::Snake(RenderEngine* rend, int screenWidth, int screenHeight, int fieldWid
 	GenerateAssets();
 
 	keys = new bool[4];
-
-	currentDirection = 3;
-	speed = 10;
-	speedCounter = 0;
-	move = false;
 }
 
 /**
@@ -35,9 +32,8 @@ Snake::~Snake() { }
  */
 bool Snake::Update()
 {
-	this_thread::sleep_for(25ms);
-	++speedCounter;
-	move = (speedCounter == speed);
+	movementCounter += time->GetDeltaTime();
+	move = (movementCounter >= movementDelay);
 
 	InputHandler();
 	GameLogic();
@@ -61,8 +57,7 @@ void Snake::Reset()
 	GenerateAssets();
 
 	currentDirection = 3;
-	speed = 10;
-	speedCounter = 0;
+	movementCounter = 0.0f;
 	move = false;
 }
 
@@ -93,7 +88,7 @@ void Snake::GameLogic()
 	if (move)
 	{
 		Move(currentDirection);
-		speedCounter = 0;
+		movementCounter = 0.0f;
 	}
 }
 

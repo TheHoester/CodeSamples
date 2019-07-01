@@ -36,8 +36,8 @@ private:
 	Vector2 currentPosition;
 
 	// Gameplay
-	int speed;
-	int speedCounter;
+	const float movementDelay;
+	float movementCounter;
 	bool move;
 	queue<Vector2> snake;
 
@@ -52,7 +52,7 @@ private:
 	void NewPellet(void);
 
 public:
-	Snake(RenderEngine* rend, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight);
+	Snake(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight);
 	~Snake(void);
 
 	bool Update(void) override;

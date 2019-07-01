@@ -28,10 +28,13 @@ private:
 
 	// Controls
 	bool rotateHold;
+	float inputDelay;
+	float inputCounter;
+	bool canInput;
 
 	// Gameplay
-	int speed;
-	int speedCounter;
+	float movementDelay;
+	float movementCounter;
 	bool forceDown;
 	int pieceCount;
 	vector<int> lines;
@@ -47,7 +50,7 @@ private:
 	bool DoesPieceFit(int tetromino, int rotation, int posX, int posY);
 		
 public:
-	Tetris(RenderEngine* rend, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight);
+	Tetris(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight);
 	~Tetris(void);
 
 	bool Update(void) override;
