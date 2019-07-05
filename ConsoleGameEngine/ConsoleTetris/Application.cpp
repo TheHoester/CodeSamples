@@ -2,57 +2,35 @@
 
 /**
  * Constructor
- * @param rend The render engine used to draw to the console.
- * @param screenWidth Character width of the screen.
- * @param screenHeight Character height of the screen.
+ * @param buffer A pointer to the screenbuffer to be able to draw to.
+ * @param input Pointer to the input handler.
+ * @param time Pointer to the time handler.
+ * @param appID The id of the application.
+ * @param width Character width of the screen.
+ * @param height Character height of the screen.
+ * @param fontWidth Pixel width of the font.
+ * @param fontHeight Pixel height of the font.
  */
-Application::Application(RenderEngine* rend, Time* time, int screenWidth, int screenHeight) : renderer(rend), time(time), screenWidth(screenWidth), screenHeight(screenHeight)
-{
-	screen = new wchar_t[screenWidth * screenHeight];
-	for (int i = 0; i < screenWidth * screenHeight; ++i)
-		screen[i] = L' ';
-
-	gameOver = false;
-	score = 0;
-}
+Application::Application(CHAR_INFO* buffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) : screenBuffer(buffer), input(input), time(time), 
+	appID(appID), screenWidth(width), screenHeight(height), fontWidth(fontWidth), fontHeight(fontHeight) { }
 
 /**
  * Destructor
  */
-Application::~Application() 
-{
-	if (field != NULL)
-		delete[] field;
-	if (screen != NULL)
-		delete[] screen;
-	if (keys != NULL)
-		delete[] keys;
-}
+Application::~Application() { }
 
-int Application::GetScreenWidth() const { return screenWidth; }
-int Application::GetScreenHeight() const { return screenHeight; }
-int Application::GetScore() const { return score; }
+int Application::ScreenWidth() const { return screenWidth; }
+int Application::ScreenHeight() const { return screenHeight; }
+int Application::FontWidth() const { return fontWidth; }
+int Application::FontHeight() const { return fontHeight; }
+
+void Application::SetScreenBuffer(CHAR_INFO* buffer) { screenBuffer = buffer;  }
 
 /**
  * Reset()
  * Resets the app back to it's starting state.
  */
-void Application::Reset()
-{
-	if (field != NULL)
-		delete[] field;
-
-	if (screen != NULL)
-	{
-		delete[] screen;
-		screen = new wchar_t[screenWidth * screenHeight];
-		for (int i = 0; i < screenWidth * screenHeight; ++i)
-			screen[i] = L' ';
-	}
-
-	gameOver = false;
-	score = 0;
-}
+void Application::Reset() { }
 
 /**
  * GenerateFieldBox()

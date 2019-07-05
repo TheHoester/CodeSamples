@@ -1,118 +1,115 @@
 #include "BouncingBall.h"
 
-/**
+/*
  * Constructor
- * @param rend The render engine used to draw to the console.
- * @param time The time object that is used to track the length of time between frames.
- * @param screenWidth Character width of the screen.
- * @param screenHeight Character height of the screen.
+ * @param screenBuffer A pointer to the screenbuffer to be able to draw to.
+ * @param input Pointer to the input handler.
+ * @param time Pointer to the time handler.
+ * @param appID The id of the application.
+ * @param width Character width of the screen.
+ * @param height Character height of the screen.
+ * @param fontWidth Pixel width of the font.
+ * @param fontHeight Pixel height of the font.
+ * @param radus The radius of the ball.
  */
-BouncingBall::BouncingBall(RenderEngine* rend, Time* time, int screenWidth, int screenHeight) :
-	Application(rend, time, screenWidth, screenHeight), position(screenWidth / 2, screenHeight / 2), direction(1.0f, 1.0f), speed(10.0f)
+BouncingBall::BouncingBall(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, int radius) :
+	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), radius(radius), position(screenWidth / 2, screenHeight / 2), direction(1.0f, 1.0f), speed(30.0f)
 {
-	keys = new bool[1];
 
-	GenerateAssets();
 }
 
 /**
  * Destructor
  */
-BouncingBall::~BouncingBall() { }
+BouncingBall::~BouncingBall() 
+{ 
 
-/**
+}
+
+/*
  * Update()
- * Handles running all the logic for the game.
- * @return The current gameover state.
+ * Public call to the main update function for the game.
+ * @return 0 is the game should exit to menu, else the game ID number.
  */
-bool BouncingBall::Update()
+int BouncingBall::Update()
 {
-	InputHandler();
 	GameLogic();
 	Draw();
 
-	return gameOver;
+	if (input->IsKeyPressed(VK_RETURN))
+		Reset();
+	if (input->IsKeyPressed(VK_ESCAPE))
+	{
+		Reset();
+		return 0;
+	}
+
+	return appID;
 }
 
-/**
- * Reset()
- * Resets the game back to it's starting state.
- */
-void BouncingBall::Reset()
-{
-	Application::Reset();
-}
-
-/**
- * InputHandler()
- * Handles getting the current state of all the input.
- */
-void BouncingBall::InputHandler()
-{
-	keys[0] = InputHandler::IsKeyDown(VK_BACK);
-}
-
-/**
+/*
  * GameLogic()
- * Handles the changing of state depending on the input given.
+ * Runs the main logic for the game.
  */
 void BouncingBall::GameLogic()
 {
-	gameOver = keys[0];
-
 	position += (direction * speed * time->GetDeltaTime());
 
 	// Boundary Check
-	if (position.x < 3.0f)
+	if (position.x < radius + 1.0f)
 	{
-		position.x = 3.0f;
+		position.x = radius + 1.0f;
 		direction.x *= -1;
 	}
-	else if (position.x > screenWidth - 3.0f)
+	else if (position.x > screenWidth - radius - 1.0f)
 	{
-		position.x = screenWidth - 3.0f;
+		position.x = screenWidth - radius - 1.0f;
 		direction.x *= -1;
 	}
 
-	if (position.y < 3.0f)
+	if (position.y < radius + 1.0f)
 	{
-		position.y = 3.0f;
+		position.y = radius + 1.0f;
 		direction.y *= -1;
 	}
-	else if (position.y > screenHeight - 3.0f)
+	else if (position.y > screenHeight - radius - 1.0f)
 	{
-		position.y = screenHeight - 3.0f;
+		position.y = screenHeight - radius - 1.0f;
 		direction.y *= -1;
 	}
 }
 
-/**
+/*
  * Draw()
- * Handles drawing the game to the console.
+ * Draws the game to the screen buffer.
  */
 void BouncingBall::Draw()
 {
 	// Draw Field
 	for (int x = 0; x < screenWidth; ++x)
+	{
 		for (int y = 0; y < screenHeight; ++y)
-			screen[(y * screenWidth) + x] = L" #"[field[(y * screenWidth) + x]];
+		{
+			if (x == 0 || y == 0 || x == screenWidth - 1 || y == screenHeight - 1)
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, PIXEL_SOLID, FG_DARK_BLUE);
+			else
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, ' ');
+		}
+	}
+	
 
 	// Draw Ball
-	for (int x = -2; x <= 2; ++x)
-		for (int y = -2; y <= 2; ++y)
-			if (!((x == -2 || x == 2) && (y == -2 || y == 2)))
-				screen[(((int)position.y + y) * screenWidth) + (int)position.x + x] = 0x2588;
-
-
-	renderer->Draw(screen);
+	GameEngine::DrawCircle(screenBuffer, screenWidth, screenHeight, position.x, position.y, radius, PIXEL_SOLID, FG_RED);
 }
 
 /**
- * GenerateAssets()
- * Used to populate all variables with the assets needed to draw the game.
- * Usually called in the constructor and the reset function.
+ * ResetGame()
+ * Resets the game back to it's starting state.
  */
-void BouncingBall::GenerateAssets()
+void BouncingBall::Reset()
 {
-	field = Application::GenerateFieldBox(screenWidth, screenHeight, 1);
+	position = FVector2(screenWidth / 2, screenHeight / 2);
+	direction = FVector2(1.0f, 1.0f);
 }
+
+void BouncingBall::GenerateAssets() { }

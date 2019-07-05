@@ -1,11 +1,10 @@
 #pragma once
-#include <thread>
+#include <string>
 #include <vector>
-#include <Windows.h>
 
 #include "Application.h"
+#include "GameEngine.h"
 #include "InputHandler.h"
-#include "RenderEngine.h"
 
 using namespace std;
 
@@ -17,8 +16,12 @@ class Tetris : public Application
 {
 private:
 	// Assets
+	unsigned char* field;
 	wstring tetrominos[7];
-	static const int ASSET_WIDTH = 4;
+	short tetroColours[7];
+	const int assetWidth = 4;
+	const int fieldWidth = 12;
+	const int fieldHeight = 18;
 
 	// Current piece variables
 	int currentPiece;
@@ -27,7 +30,6 @@ private:
 	int currentY;
 
 	// Controls
-	bool rotateHold;
 	float inputDelay;
 	float inputCounter;
 	bool canInput;
@@ -38,21 +40,22 @@ private:
 	bool forceDown;
 	int pieceCount;
 	vector<int> lines;
+	int score;
+	bool gameOver;
 
 	// Game Logic Functions
-	void InputHandler(void) override;
 	void GameLogic(void) override;
 	void Draw(void) override;
+	void Reset(void);
 
 	// Misc Functions
 	void GenerateAssets(void) override;
-	int Rotate(int posX, int posY, int rotation);
-	bool DoesPieceFit(int tetromino, int rotation, int posX, int posY);
+	int Rotate(const int& posX, const int& posY, const int& rotation);
+	bool DoesPieceFit(const int& tetromino, const int& rotation, const int& posX, const int& posY);
 		
 public:
-	Tetris(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight);
+	Tetris(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~Tetris(void);
 
-	bool Update(void) override;
-	void Reset(void) override;
+	int Update(void) override;
 };

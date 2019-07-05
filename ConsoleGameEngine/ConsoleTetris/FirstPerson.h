@@ -1,13 +1,13 @@
 #pragma once
 #include <algorithm>
-#include <chrono>
+#include <string>
 #include <vector>
-#include <Windows.h>
-#include "Application.h"
-#include "FVector2.h"
-#include "InputHandler.h"
 
-using namespace std;
+#include "Application.h"
+#include "Colour.h"
+#include "Defines.h"
+#include "GameEngine.h"
+#include "InputHandler.h"
 
 /**
  * FirstPerson
@@ -17,33 +17,34 @@ class FirstPerson : public Application
 {
 private:
 	// Assets
-	wstring map;
+	const int mapWidth;
+	const int mapHeight;
+	std::wstring map;
 
 	// Gameplay
-	const float fov = 3.14159f / 4.0f;
+	const float fov = PI / 4.0f;
 	const float depthOfField = 16.0f;
+	const float moveSpeed = 5.0f;
+	const float rotationSpeed = 1.5f;
 
 	FVector2 player;
 	FVector2 direction;
 	FVector2 moveVelocity;
 	float playerA;
 
-	const float moveSpeed;
-	const float rotationSpeed;
-
 	// Game Logic Functions
-	void InputHandler(void) override;
 	void GameLogic(void) override;
 	void Draw(void) override;
+	void Reset(void);
 
 	// Misc Functions
 	void GenerateAssets(void) override;
 
 public:
-	FirstPerson(RenderEngine* rend, Time* time, int screenWidth, int screenHeight);
-	FirstPerson(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight, wstring map);
+	FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 320, int height = 160, int fontWidth = 4, int fontHeight = 4);
+	FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, 
+		int mapWidth, int mapHeight, std::wstring map);
 	~FirstPerson(void);
 
-	bool Update(void) override;
-	void Reset(void) override;
+	int Update(void) override;
 };

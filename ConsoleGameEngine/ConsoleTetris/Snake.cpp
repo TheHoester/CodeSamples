@@ -1,88 +1,72 @@
 #include "Snake.h"
 
-/**
+/*
  * Constructor
- * @param rend The render engine used to draw to the console.
- * @param time The time object that is used to track the length of time between frames.
- * @param screenWidth Character width of the screen.
- * @param screenHeight Character height of the screen.
- * @param fieldWidth Character width of the play field.
- * @param fieldHeight Character height of the play field.
+ * @param screenBuffer A pointer to the screenbuffer to be able to draw to.
+ * @param input Pointer to the input handler.
+ * @param time Pointer to the time handler.
+ * @param appID The id of the application.
+ * @param width Character width of the screen.
+ * @param height Character height of the screen.
+ * @param fontWidth Pixel width of the font.
+ * @param fontHeight Pixel height of the font.
  */
-Snake::Snake(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight) : 
-	Application(rend, time, screenWidth, screenHeight), currentDirection(3), movementDelay(0.3f), movementCounter(0.0f), move(false)
+Snake::Snake(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) :
+	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight),
+	currentDirection(3), movementCounter(0.0f), move(false), score(0), gameOver(false)
 {
-	Application::fieldWidth = fieldWidth;
-	Application::fieldHeight = fieldHeight;
-
 	GenerateAssets();
-
-	keys = new bool[4];
 }
 
 /**
  * Destructor
  */
-Snake::~Snake() { }
+Snake::~Snake() 
+{
+	if (field != NULL)
+		delete[] field;
+}
 
-/**
+/*
  * Update()
- * Handles running all the logic for the game.
- * @return The current gameover state.
+ * Public call to the main update function for the game.
+ * @return 0 is the game should exit to menu, else the game ID number.
  */
-bool Snake::Update()
+int Snake::Update()
+{
+	if (!gameOver)
+	{
+		GameLogic();
+		Draw();
+	}
+	else
+	{
+		if (input->IsKeyPressed(VK_RETURN))
+			Reset();
+		else if (input->IsKeyPressed(VK_ESCAPE))
+		{
+			Reset();
+			return 0;
+		}
+	}
+
+	return appID;
+}
+
+/*
+ * GameLogic()
+ * Runs the main logic for the game.
+ */
+void Snake::GameLogic()
 {
 	movementCounter += time->GetDeltaTime();
 	move = (movementCounter >= movementDelay);
 
-	InputHandler();
-	GameLogic();
-	Draw();
-
-	return gameOver;
-}
-
-/**
- * Reset()
- * Resets the game back to it's starting state.
- */
-void Snake::Reset()
-{
-	// Delete Old Assets
-	Application::Reset();
-	while (!snake.empty())
-		snake.pop();
-
-	// Create New Assets
-	GenerateAssets();
-
-	currentDirection = 3;
-	movementCounter = 0.0f;
-	move = false;
-}
-
-/**
- * InputHandler()
- * Handles getting the current state of all the input.
- */
-void Snake::InputHandler()
-{
-	keys[0] = InputHandler::IsKeyDown(VK_RIGHT);
-	keys[1] = InputHandler::IsKeyDown(VK_LEFT);
-	keys[2] = InputHandler::IsKeyDown(VK_DOWN);
-	keys[3] = InputHandler::IsKeyDown(VK_UP);
-}
-
-/**
- * GameLogic()
- * Handles the changing of state depending on the input given.
- */
-void Snake::GameLogic()
-{
 	// Input Handling
-	for (int i = 0; i < 4; ++i)
-		if (keys[i])
-			currentDirection = i;
+	if (input->IsKeyPressed(VK_RIGHT)) currentDirection = 0;
+	else if (input->IsKeyPressed(VK_LEFT)) currentDirection = 1;
+	else if (input->IsKeyPressed(VK_DOWN)) currentDirection = 2;
+	else if (input->IsKeyPressed(VK_UP)) currentDirection = 3;
 
 	// Movement
 	if (move)
@@ -92,40 +76,86 @@ void Snake::GameLogic()
 	}
 }
 
-/**
+/*
  * Draw()
- * Handles drawing the game to the console.
+ * Draws the game to the screen buffer.
  */
 void Snake::Draw()
 {
 	// Draw Field
 	for (int x = 0; x < fieldWidth; ++x)
+	{
 		for (int y = 0; y < fieldHeight; ++y)
-			screen[((y + 2) * screenWidth) + (x + 2)] = L" Oo£#"[field[(y * fieldWidth) + x]];
+		{
+			switch (field[(y * fieldWidth) + x])
+			{
+			case 0:
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, ' ', BG_DARK_GREY);
+				break;
+			case 1:
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, 'O', FG_GREEN | BG_DARK_GREY);
+				break;
+			case 2:
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, 'o', FG_GREEN | BG_DARK_GREY);
+				break;
+			case 3:
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, '#', FG_YELLOW | BG_DARK_GREY);
+				break;
+			case 4:
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2);
+				break;
+			}
+		}
+	}
 
 	// Draw Score
-	swprintf_s(&screen[(2 * screenWidth) + fieldWidth + 6], 16, L"SCORE: %8d", score);
+	std::wstring scoreText = L"SCORE: " + std::to_wstring(score);
+	GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 2, scoreText, FG_WHITE);
 
 	// Gameover screen
 	if (gameOver)
 	{
-		swprintf_s(&screen[(4 * screenWidth) + fieldWidth + 6], 12, L"GAME OVER!!");
-		swprintf_s(&screen[(5 * screenWidth) + fieldWidth + 6], 23, L"Press [ENTER] to retry");
-		swprintf_s(&screen[(6 * screenWidth) + fieldWidth + 6], 36, L"Press [BACKSPACE] to return to menu");
+		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 4, L"GAME OVER!!", FG_WHITE);
+		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 5, L"Press [ENTER] to retry", FG_WHITE);
+		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 6, L"Press [ESCAPE] to exit", FG_WHITE);
 	}
-
-	// Display Frame
-	renderer->Draw(screen);
 }
 
-/**
+/*
+ * Reset()
+ * Resets the game back to the beginning state.
+ */
+void Snake::Reset()
+{
+	if (field != NULL)
+		delete[] field;
+
+	gameOver = false;
+	score = 0;
+
+	while (!snake.empty())
+		snake.pop();
+
+	currentDirection = 3;
+	movementCounter = 0.0f;
+	move = false;
+
+	GenerateAssets();
+
+	GameEngine::ClearScreen(screenBuffer, screenWidth, screenHeight);
+}
+
+
+/*
  * GenerateAssets()
- * Used to populate all variables with the assets needed to draw the game.
- * Usually called in the constructor and the reset function.
+ * Initilizes all the assets for the game.
  */
 void Snake::GenerateAssets()
 {
-	field = Application::GenerateFieldBox(fieldWidth, fieldHeight, 4);
+	field = new unsigned char[fieldWidth * fieldHeight];
+	for (int x = 0; x < fieldWidth; ++x)
+		for (int y = 0; y < fieldHeight; ++y)
+			field[(y * fieldWidth) + x] = (x == 0 || y == 0 || x == fieldWidth - 1 || y == fieldHeight - 1) ? 4 : 0;
 
 	currentPosition = Vector2(fieldWidth / 2, (fieldHeight / 2) + 1);
 	field[(currentPosition.y * fieldWidth) + currentPosition.x] = 2;
@@ -146,7 +176,7 @@ void Snake::GenerateAssets()
  * @param direction The integer representation of the direction the snake should move.
  *					0 = Right | 1 = Left | 2 = Down | 3 = Up
  */
-void Snake::Move(int direction)
+void Snake::Move(const int& direction)
 {
 	switch (direction)
 	{

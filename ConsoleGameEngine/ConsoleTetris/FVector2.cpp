@@ -1,5 +1,7 @@
 #include "FVector2.h"
 
+using namespace Engine::Physics;
+
 // CONSTRUCTORS ########################################################################################################################
 
 FVector2::FVector2() : x(0.0f), y(0.0f) { }
@@ -19,47 +21,47 @@ FVector2 FVector2::Normalized() const
 
 // MATH OPERATORS ######################################################################################################################
 
-FVector2 FVector2::operator+(const FVector2 other) const { return FVector2(x + other.x, y + other.y); }
-FVector2 FVector2::operator-(const FVector2 other) const { return FVector2(x - other.x, y - other.y); }
-FVector2 FVector2::operator*(const float other) const {	return FVector2(x * other, y * other); }
-FVector2 FVector2::operator/(const float other) const { return FVector2(x / other, y / other); }
+FVector2 FVector2::operator+(const FVector2& other) const { return FVector2(x + other.x, y + other.y); }
+FVector2 FVector2::operator-(const FVector2& other) const { return FVector2(x - other.x, y - other.y); }
+FVector2 FVector2::operator*(const float& other) const {	return FVector2(x * other, y * other); }
+FVector2 FVector2::operator/(const float& other) const { return FVector2(x / other, y / other); }
 
-FVector2 FVector2::operator=(const FVector2 other)
+FVector2 FVector2::operator=(const FVector2& other)
 {
 	x = other.x;
 	y = other.y;
 	return *this;
 }
 
-FVector2 FVector2::operator+=(const FVector2 other)
+FVector2 FVector2::operator+=(const FVector2& other)
 {
 	x += other.x;
 	y += other.y;
 	return *this;
 }
 
-FVector2 FVector2::operator-=(const FVector2 other)
+FVector2 FVector2::operator-=(const FVector2& other)
 {
 	x -= other.x;
 	y -= other.y;
 	return *this;
 }
 
-FVector2 FVector2::operator*=(const float other)
+FVector2 FVector2::operator*=(const float& other)
 {
 	x *= other;
 	y *= other;
 	return *this;
 }
 
-FVector2 FVector2::operator/=(const float other)
+FVector2 FVector2::operator/=(const float& other)
 {
 	x /= other;
 	y /= other;
 	return *this;
 }
 
-bool FVector2::operator==(const FVector2 other) const
+bool FVector2::operator==(const FVector2& other) const
 { 
 	return (x == other.x && y == other.y); 
 }

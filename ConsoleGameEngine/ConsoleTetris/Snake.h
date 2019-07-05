@@ -1,28 +1,10 @@
 #pragma once
 #include <queue>
-#include <thread>
+#include <string>
+
 #include "Application.h"
+#include "GameEngine.h"
 #include "InputHandler.h"
-
-using namespace std;
-
-struct Vector2
-{
-	int x;
-	int y;
-
-	Vector2(void) : x(0), y(0) { }
-	Vector2(int x, int y) : x(x), y(y) { }
-
-	Vector2& operator=(Vector2 other)
-	{
-		std::swap(x, other.x);
-		std::swap(y, other.y);
-		return* this;
-	}
-
-	bool operator==(Vector2 other) { return (x == other.x && y == other.y); }
-};
 
 /**
  * Snake
@@ -31,30 +13,36 @@ struct Vector2
 class Snake : public Application
 {
 private:
+	// Engine
+	const int fieldWidth = 18;
+	const int fieldHeight = 18;
+	unsigned char* field;
+
 	// Player
 	int currentDirection;
 	Vector2 currentPosition;
 
 	// Gameplay
-	const float movementDelay;
+	const float movementDelay = 0.3f;
 	float movementCounter;
 	bool move;
-	queue<Vector2> snake;
+	std::queue<Vector2> snake;
+	int score;
+	bool gameOver;
 
 	// Game Logic Functions
-	void InputHandler(void) override;
-	void GameLogic(void) override;
-	void Draw(void) override;
+	void GameLogic(void);
+	void Draw(void);
+	void Reset(void);
 
 	// Misc Functions
 	void GenerateAssets(void) override;
-	void Move(int direction);
+	void Move(const int& direction);
 	void NewPellet(void);
 
 public:
-	Snake(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight);
+	Snake(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~Snake(void);
 
-	bool Update(void) override;
-	void Reset(void) override;
+	int Update(void) override;
 };

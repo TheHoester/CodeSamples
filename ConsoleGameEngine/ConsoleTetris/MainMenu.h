@@ -1,5 +1,4 @@
 #pragma once
-#include <thread>
 #include "Application.h"
 #include "InputHandler.h"
 
@@ -13,20 +12,20 @@ class MainMenu : public Application
 {
 private:
 	// Assets
-	wstring menuOptions[4];
+	const int numMenuOptions = 6;
+	wstring* menuOptions;
 	int menuWidth;
 	int menuHeight;
 
+	// Gameplay
+	int currentOption;
+
 	// Controls
-	int inputDelay;
+	const int inputDelay = 8;
 	int inputDelayCounter;
 	bool calculateInput;
 
-	// Gameplay
-	int numMenuOptions;
-
 	// Game Logic Functions
-	void InputHandler(void) override;
 	void GameLogic(void) override;
 	void Draw(void) override;
 
@@ -34,8 +33,8 @@ private:
 	void GenerateAssets(void) override;
 
 public:
-	MainMenu(RenderEngine* rend, Time* time, int screenWidth, int screenHeight);
+	MainMenu(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~MainMenu(void);
 
-	bool Update(void) override;
+	int Update(void) override;
 };

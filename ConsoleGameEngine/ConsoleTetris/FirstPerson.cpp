@@ -1,138 +1,129 @@
 #include "FirstPerson.h"
 
-/**
- * Constructor
- * @param rend The render engine used to draw to the console.
- * @param time The time object that is used to track the length of time between frames.
- * @param screenWidth Character width of the screen.
- * @param screenHeight Character height of the screen.
- * @param fieldWidth Character width of the map.
- * @param fieldHeight Character height of the map.
+/*
+ * Constructor (Default Map)
+ * @param screenBuffer A pointer to the screenbuffer to be able to draw to.
+ * @param input Pointer to the input handler.
+ * @param time Pointer to the time handler.
+ * @param appID The id of the application.
+ * @param width Character width of the screen.
+ * @param height Character height of the screen.
+ * @param fontWidth Pixel width of the font.
+ * @param fontHeight Pixel height of the font.
  */
-FirstPerson::FirstPerson(RenderEngine* rend, Time* time, int screenWidth, int screenHeight) : Application(rend, time, screenWidth, screenHeight), 
-	player(8.0f, 8.0f), direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f), moveSpeed(5.0f), rotationSpeed(1.5f)
+FirstPerson::FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) :
+	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), mapWidth(32), mapHeight(32), player(2.0f, 2.0f),
+	direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f)
 {
-	Application::fieldWidth = 16;
-	Application::fieldHeight = 16;
-
-	// Assets
 	GenerateAssets();
-
-	// Input
-	keys = new bool[5];
 }
 
-/**
- * Constructor
- * @param rend The render engine used to draw to the console.
- * @param time The time object that is used to track the length of time between frames.
- * @param screenWidth Character width of the screen.
- * @param screenHeight Character height of the screen.
- * @param fieldWidth Character width of the map.
- * @param fieldHeight Character height of the map.
- * @param map A 2D depiction of what the map should look like.
+/*
+ * Constructor (Custom Map)
+ * @param screenBuffer A pointer to the screenbuffer to be able to draw to.
+ * @param input Pointer to the input handler.
+ * @param time Pointer to the time handler.
+ * @param appID The id of the application.
+ * @param width Character width of the screen.
+ * @param height Character height of the screen.
+ * @param fontWidth Pixel width of the font.
+ * @param fontHeight Pixel height of the font.
+ * @param mapWidth Character width of the map.
+ * @param mapHeight Character height of the map.
+ * @param map The map to be created.
  */
-FirstPerson::FirstPerson(RenderEngine* rend, Time* time, int screenWidth, int screenHeight, int fieldWidth, int fieldHeight, wstring map) : 
-	Application(rend, time, screenWidth, screenHeight), map(map), player(8.0f, 8.0f), direction(sinf(playerA), cosf(playerA)), 
-	moveVelocity(0.0f, 0.0f), playerA(0.0f), moveSpeed(5.0f), rotationSpeed(1.5f)
-{
-	Application::fieldWidth = fieldWidth;
-	Application::fieldHeight = fieldHeight;
-
-	// Input
-	keys = new bool[5];
-}
+FirstPerson::FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, int mapWidth, int mapHeight, std::wstring map) :
+	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), mapWidth(mapWidth), mapHeight(mapHeight), map(map), player(2.0f, 2.0f),
+	direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f) { }
 
 /**
  * Destructor
  */
 FirstPerson::~FirstPerson() { }
 
-/**
+/*
  * Update()
- * Handles running all the logic for the game.
- * @return The current gameover state.
+ * Public call to the main update function for the game.
+ * @return 0 is the game should exit to menu, else the game ID number.
  */
-bool FirstPerson::Update()
+int FirstPerson::Update()
 {
-	InputHandler();
 	GameLogic();
 	Draw();
 
-	return gameOver;
+	if (input->IsKeyPressed(VK_RETURN))
+		Reset();
+	if (input->IsKeyPressed(VK_ESCAPE))
+	{
+		Reset();
+		return 0;
+	}
+
+	return appID;
 }
 
-/**
- * Reset()
- * Resets the game back to it's starting state.
- */
-void FirstPerson::Reset()
-{
-	Application::Reset();
-	
-	player = FVector2(8.0f, 8.0f);
-	direction = FVector2(sinf(playerA), cosf(playerA));
-	moveVelocity = FVector2(0.0f, 0.0f);
-	playerA = 0.0f;
-}
-
-/**
- * InputHandler()
- * Handles getting the current state of all the input.
- */
-void FirstPerson::InputHandler()
-{
-	keys[0] = InputHandler::IsKeyDown('W');
-	keys[1] = InputHandler::IsKeyDown('S');
-	keys[2] = InputHandler::IsKeyDown('A');
-	keys[3] = InputHandler::IsKeyDown('D');
-	keys[4] = InputHandler::IsKeyDown(VK_BACK);
-}
-
-/**
+/*
  * GameLogic()
- * Handles the changing of state depending on the input given.
+ * Runs the main logic for the game.
  */
 void FirstPerson::GameLogic()
 {
-	moveVelocity = direction * moveSpeed * time->GetDeltaTime();
-
 	// 'W' = Move Forwards
-	if (keys[0]) 
+	if (input->IsKeyHeld('W'))
 	{
+		moveVelocity = direction * moveSpeed * time->GetDeltaTime();
 		player += moveVelocity;
 
-		if (map[((int)player.y * fieldWidth) + (int)player.x] == '#')
+		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
 			player -= moveVelocity;
 	}
 	
 	// 'S' = Move Backwards
-	if (keys[1])
+	if (input->IsKeyHeld('S'))
 	{
+		moveVelocity = direction * moveSpeed * time->GetDeltaTime();
 		player -= moveVelocity;
 
-		if (map[((int)player.y * fieldWidth) + (int)player.x] == '#')
+		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
 			player += moveVelocity;
 	}
 
 	// 'A' = Turn Left
-	if (keys[2])
+	if (input->IsKeyHeld('A'))
 		playerA -= (rotationSpeed * time->GetDeltaTime());
 
 	// 'D' = Turn Right
-	if (keys[3])
+	if (input->IsKeyHeld('D'))
 		playerA += (rotationSpeed * time->GetDeltaTime());
-
-	// 'Escape' = Exit game
-	gameOver = keys[4];
 
 	direction.x = sinf(playerA);
 	direction.y = cosf(playerA);
+
+	// 'Q' = Move Left
+	if (input->IsKeyHeld('Q'))
+	{
+		moveVelocity = FVector2(-cosf(playerA), sinf(playerA)) * moveSpeed * time->GetDeltaTime();
+		player += moveVelocity;
+
+		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
+			player -= moveVelocity;
+	}
+
+	// 'E' = Move Right
+	if (input->IsKeyHeld('E'))
+	{
+		moveVelocity = FVector2(cosf(playerA), -sinf(playerA)) * moveSpeed * time->GetDeltaTime();
+		player += moveVelocity;
+
+		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
+			player -= moveVelocity;
+	}
+
 }
 
-/**
+/*
  * Draw()
- * Handles drawing the game to the console.
+ * Draws the game to the screen buffer.
  */
 void FirstPerson::Draw()
 {
@@ -157,18 +148,18 @@ void FirstPerson::Draw()
 			int testY = (int)(player.y + (eyeY * distanceToWall));
 
 			// Test if ray is out of bounds
-			if (testX < 0 || testX >= fieldWidth || testY < 0 || testY >= fieldHeight)
+			if (testX < 0 || testX >= mapWidth || testY < 0 || testY >= mapHeight)
 			{
 				hitWall = true;					// Just set distance to maximum depth
 				distanceToWall = depthOfField;
 			}
 			else
 			{
-				if (map[(testY * fieldWidth) + testX] == '#') // Ray is inbounds so test to see if ray cell is a wall block
+				if (map[(testY * mapWidth) + testX] == '#') // Ray is inbounds so test to see if ray cell is a wall block
 				{
 					hitWall = true;
 
-					vector<pair<float, float>> points; // distance, dot product
+					std::vector<std::pair<float, float>> points; // distance, dot product
 					for (int pX = 0; pX < 2; ++pX)
 					{
 						for (int pY = 0; pY < 2; ++pY)
@@ -177,12 +168,12 @@ void FirstPerson::Draw()
 							float vX = (float)testX + pX - player.x;
 							float dist = sqrt((vX * vX) + (vY *vY));
 							float dot = ((eyeX * vX) / dist) + ((eyeY * vY) / dist);
-							points.push_back(make_pair(dist, dot));
+							points.push_back(std::make_pair(dist, dot));
 						}
 					}
 
 					// Sort Pairs from closest to farthest
-					sort(points.begin(), points.end(), [](const pair<float, float> &left, const pair<float, float> &right) { return left.first < right.first; });
+					sort(points.begin(), points.end(), [](const std::pair<float, float> &left, const std::pair<float, float> &right) { return left.first < right.first; });
 
 					float bound = 0.01f;
 					if (acos(points.at(0).second) < bound)
@@ -200,7 +191,7 @@ void FirstPerson::Draw()
 		for (int y = 0; y < screenHeight; ++y)
 		{
 			if (y < ceiling)
-				screen[(y * screenWidth) + x] = ' ';
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, ' ');
 			else if (y > ceiling && y <= floor)
 			{
 				// Shade wall based on distance
@@ -208,15 +199,15 @@ void FirstPerson::Draw()
 				if (hitBoundry)
 					wallShade = ' ';
 				else if (distanceToWall <= depthOfField / 4.0f) // Very close
-					wallShade = 0x2588;
+					wallShade = PIXEL_SOLID;
 				else if (distanceToWall <= depthOfField / 3.0f)
-					wallShade = 0x2593;
+					wallShade = PIXEL_THREEQUARTER;
 				else if (distanceToWall <= depthOfField / 2.0f)
-					wallShade = 0x2592;
+					wallShade = PIXEL_HALF;
 				else if (distanceToWall <= depthOfField)
-					wallShade = 0x2591;
+					wallShade = PIXEL_QUARTER;
 
-				screen[(y * screenWidth) + x] = wallShade;
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, wallShade);
 			}
 			else
 			{
@@ -232,45 +223,69 @@ void FirstPerson::Draw()
 				else if (distance < 0.9f)
 					floorShade = '.';
 
-				screen[(y * screenWidth) + x] = floorShade;
+				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, floorShade);
 			}
 		}
 	}
-	// Display Stats
-	swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f FPS=%3.2f", player.x, player.y, playerA, 1.0f / time->GetDeltaTime());
 
 	// Display Map
-	for (int x = 0; x < fieldWidth; ++x)
-		for (int y = 0; y < fieldHeight; ++y)
-			screen[((y + 1) * screenWidth) + x] = map[(y * fieldWidth) + x];
+	for (int x = 0; x < mapWidth; ++x)
+		for (int y = 0; y < mapHeight; ++y)
+			GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, map[(y * mapWidth) + x]);
 
-	screen[(((int)player.y + 1) * screenWidth) + (int)player.x] = 'P';
-
-	screen[(screenWidth * screenHeight) - 1] = '\0';
-	renderer->Draw(screen);
+	GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, (int)player.x, (int)player.y + 1, 'P');
 }
 
-/**
+/*
+ * Reset()
+ * Resets the game back to the beginning state.
+ */
+void FirstPerson::Reset()
+{
+	player = FVector2(2.0f, 2.0f);
+	direction = FVector2(sinf(playerA), cosf(playerA));
+	moveVelocity = FVector2(0.0f, 0.0f);
+	playerA = 0.0f;
+
+	GameEngine::ClearScreen(screenBuffer, screenWidth, screenHeight);
+}
+
+/*
  * GenerateAssets()
- * Used to populate all variables with the assets needed to draw the game.
- * Usually called in the constructor and the reset function.
+ * Initilizes all the assets for the game.
  */
 void FirstPerson::GenerateAssets()
 {
-	map += L"################";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#...........#..#";
-	map += L"#...........#..#";
-	map += L"#...........#..#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#........#######";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"################";
+	map += L"################################";
+	map += L"#...............#..............#";
+	map += L"#.......#########.......########";
+	map += L"#..............##..............#";
+	map += L"#......##......##......##......#";
+	map += L"#......##..............##......#";
+	map += L"#..............##..............#";
+	map += L"###............####............#";
+	map += L"##.............###.............#";
+	map += L"#............####............###";
+	map += L"#..............................#";
+	map += L"#..............##..............#";
+	map += L"#..............##..............#";
+	map += L"#...........#####...........####";
+	map += L"#..............................#";
+	map += L"###..####....########....#######";
+	map += L"####.####.......######.........#";
+	map += L"#...............#..............#";
+	map += L"#.......#########.......##..####";
+	map += L"#..............##..............#";
+	map += L"#......##......##.......#......#";
+	map += L"#......##......##......##......#";
+	map += L"#..............##..............#";
+	map += L"###............####............#";
+	map += L"##.............###.............#";
+	map += L"#............####............###";
+	map += L"#..............................#";
+	map += L"#..............................#";
+	map += L"#..............##..............#";
+	map += L"#............##.............####";
+	map += L"#..............##..............#";
+	map += L"################################";
 }

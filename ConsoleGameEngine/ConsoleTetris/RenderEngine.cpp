@@ -1,43 +1,19 @@
 #include "RenderEngine.h"
 
+using namespace Engine::Graphics;
+
 /**
  * Constructor
+ * @param width The width of the console in characters.
+ * @param height The height of the console in characters.
+ * @param fontWidth The width of the characters in pixels.
+ * @param fontHeight The height of the characters in pixels.
  */
-RenderEngine::RenderEngine(int screenWidth, int screenHeight) : screenWidth(screenWidth), screenHeight(screenHeight), bytesWritten(0)
+RenderEngine::RenderEngine(int width, int height, int fontWidth, int fontHeight) : bytesWritten(0)
 {
-	// Small window = Width = 656, Height = 471
-	// Large window = Width = 976, Height = 681
-
 	// Gets the Console Screen Buffer
-	console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-	SetConsoleActiveScreenBuffer(console);
-
-	// Sets the window size
-	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
-	SMALL_RECT windowRect;
-	GetConsoleScreenBufferInfo(console, &screenBufferInfo);
-	windowRect = screenBufferInfo.srWindow;
-	windowRect.Right = windowRect.Left + screenWidth - 1;
-	windowRect.Bottom = windowRect.Top + screenHeight - 1;
-	SetConsoleWindowInfo(console, true, &windowRect);
-
-	// Set screen buffer size
-	COORD screenDimentions;
-	screenDimentions.X = screenWidth;
-	screenDimentions.Y = screenHeight;
-	SetConsoleScreenBufferSize(console, screenDimentions);
-
-	HWND hConsole = GetConsoleWindow();
-	RECT r;
-	GetWindowRect(hConsole, &r);
-	MoveWindow(hConsole, r.left, r.top, (screenWidth + 2) * 8, (screenHeight + 3) * 16, TRUE);
-
-	// Gets and Sets the Console Font size
-	CONSOLE_FONT_INFOEX cfi = { sizeof(CONSOLE_FONT_INFOEX) };
-	GetCurrentConsoleFontEx(console, false, &cfi);
-	cfi.dwFontSize.X = 8;
-	cfi.dwFontSize.Y = 16;
-	SetCurrentConsoleFontEx(console, false, &cfi);
+	console = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetupWindow(width, height, fontWidth, fontHeight);
 }
 
 /**
@@ -49,44 +25,64 @@ RenderEngine::~RenderEngine()
 }
 
 /**
- * Draw()
- * Takes an array of characters and draws them to the console.
- * @param characterArray The array of characters that will be drawn to the console.
+ * SetupWindow()
+ * Sets the size of the console and the font used.
+ * @param width The width of the console in characters.
+ * @param height The height of the console in characters.
+ * @param fontWidth The width of the characters in pixels.
+ * @param fontHeight The height of the characters in pixels.
  */
-void RenderEngine::Draw(const wchar_t *characterArray)
+void RenderEngine::SetupWindow(const int& width, const int& height, const int& fontWidth, const int& fontHeight)
 {
-	WriteConsoleOutputCharacter(console, characterArray, screenWidth * screenHeight, { 0,0 }, &bytesWritten);
-}
+	// TODO: Error check console handle
 
-void RenderEngine::Reset(int width, int height)
-{
 	screenWidth = width;
 	screenHeight = height;
-	
-	// Sets the window size
+
+	// Change console visualsize to be the minimum so Screen Buffer can shrink.
+	windowRect = { 0, 0, 1, 1 };
+	SetConsoleWindowInfo(console, TRUE, &windowRect); // TODO: Error check
+
+	// Set size of Screen Buffer.
+	COORD screenDimentions = { (short)screenWidth, (short)screenHeight };
+	SetConsoleScreenBufferSize(console, screenDimentions); // TODO: Error check
+
+	// Set Screen Buffer to console.
+	SetConsoleActiveScreenBuffer(console); // TODO: Error check
+
+	// Set the font size.
+	CONSOLE_FONT_INFOEX cfi;
+	cfi.cbSize = sizeof(cfi);
+	cfi.nFont = 0;
+	cfi.dwFontSize.X = fontWidth;
+	cfi.dwFontSize.Y = fontHeight;
+	cfi.FontFamily = FF_DONTCARE;
+	cfi.FontWeight = FW_NORMAL;
+	wcscpy_s(cfi.FaceName, L"Consolas");
+	SetCurrentConsoleFontEx(console, false, &cfi); // TODO: Error check
+
+	// Checks if the dimentions exceed the maximum allows window size. 
 	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
-	SMALL_RECT windowRect;
-	GetConsoleScreenBufferInfo(console, &screenBufferInfo);
-	windowRect = screenBufferInfo.srWindow;
-	windowRect.Right = windowRect.Left + screenWidth - 1;
-	windowRect.Bottom = windowRect.Top + screenHeight - 1;
-	SetConsoleWindowInfo(console, true, &windowRect);
+	GetConsoleScreenBufferInfo(console, &screenBufferInfo); // TODO: Error check
+	// TODO: Check if window size exceeds the maximum allowed dimentions
+	// if (screenHeight > screenBufferInfo.Y)
+	//		THROW ERROR
+	// if (screenWidth > screenBufferInfo.X)
+	//		THROW ERROR
 
-	// Set screen buffer size
-	COORD screenDimentions;
-	screenDimentions.X = screenWidth;
-	screenDimentions.Y = screenHeight;
-	SetConsoleScreenBufferSize(console, screenDimentions);
+	// Sets the window size
+	windowRect = { 0, 0, (short)screenWidth - 1, (short)screenHeight - 1 };
+	SetConsoleWindowInfo(console, TRUE, &windowRect); // TODO: Error check
+}
 
-	HWND hConsole = GetConsoleWindow();
-	RECT r;
-	GetWindowRect(hConsole, &r);
-	MoveWindow(hConsole, r.left, r.top, (screenWidth + 2) * 8, (screenHeight + 3) * 16, TRUE);
-
-	// Gets and Sets the Console Font size
-	CONSOLE_FONT_INFOEX cfi = { sizeof(CONSOLE_FONT_INFOEX) };
-	GetCurrentConsoleFontEx(console, false, &cfi);
-	cfi.dwFontSize.X = 8;
-	cfi.dwFontSize.Y = 16;
-	SetCurrentConsoleFontEx(console, false, &cfi);
+/**
+ * Draw()
+ * Takes an array of characters and draws them to the console.
+ * @param title The name of the program to be displayed on the top bar.
+ * @param characterArray The array of characters that will be drawn to the console.
+ */
+void RenderEngine::Draw(const wchar_t* title, const CHAR_INFO* characterArray)
+{
+	SetConsoleTitle(title);
+	WriteConsoleOutput(console, characterArray, { (short)screenWidth, (short)screenHeight }, { 0,0 }, &windowRect);
 }
