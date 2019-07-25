@@ -1,8 +1,11 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (ConsoleTetris.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  ArcadeGames.cpp
+  Main.cpp
   SideScroller.cpp
-c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(96): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(105): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(115): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
-c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(116): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
-c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(138): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(102): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(108): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(119): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(120): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+c:\users\user\documents\projects\consolegameengine\consoletetris\sidescroller.cpp(142): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Generating Code...
   ConsoleTetris.vcxproj -> C:\Users\User\Documents\Projects\ConsoleGameEngine\Debug\ConsoleGameEngine.exe

@@ -12,7 +12,7 @@
  * @param fontHeight Pixel height of the font.
  */
 SideScroller::SideScroller(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : Application(engine, appID, width, height, fontWidth, fontHeight),
-	backgroundXPos(0.0f), playerSpeed(40.f), playerVelocity(0.0f, 0.0f), jumpForce(75.0f), isJumping(false)
+	backgroundXPos(0.0f), playerSpeed(40.f), playerVelocity(0.0f, 0.0f), jumpForce(100.0f), isJumping(false)
 {
 	GenerateAssets();
 }
@@ -37,6 +37,9 @@ SideScroller::~SideScroller()
  */
 int SideScroller::Update()
 {
+	if (!playerObject->isActive)
+		playerObject->isActive = true;
+
 	GameLogic();
 	Draw();
 
@@ -44,6 +47,7 @@ int SideScroller::Update()
 		Reset();
 	if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 	{
+		playerObject->isActive = false;
 		Reset();
 		return 0;
 	}
@@ -89,13 +93,6 @@ void SideScroller::GameLogic()
 	if (isJumping)
 		playerVelocity.y += GRAVITY;
 	
-	if (isJumping && playerObject->screenPosition.y > screenHeight - ground1->Height() - player1->Height())
-	{
-		isJumping = false;
-		playerVelocity.y = 0.0f;
-		playerObject->screenPosition.y = screenHeight - ground1->Height() - player1->Height();
-	}
-
 	// Forces on player
 	playerObject->screenPosition += playerVelocity * Time::Instance().DeltaTime();
 
@@ -103,6 +100,13 @@ void SideScroller::GameLogic()
 		playerObject->screenPosition.x = 0;
 	else if (playerObject->screenPosition.x + playerObject->GetSprite()->Width() >= screenWidth)
 		playerObject->screenPosition.x = screenWidth - playerObject->GetSprite()->Width();
+
+	if (isJumping && playerObject->screenPosition.y > screenHeight - ground1->Height() - player1->Height())
+	{
+		isJumping = false;
+		playerVelocity.y = 0.0f;
+		playerObject->screenPosition.y = screenHeight - ground1->Height() - player1->Height();
+	}
 }
 
 /*
@@ -136,4 +140,5 @@ void SideScroller::GenerateAssets()
 	player1 = new Sprite(L"../Assets/SideScroller/Player1.spr");
 
 	playerObject = engine->CreateGameObject(5, screenHeight - (ground1->Height() * 2), player1);
+	playerObject->isActive = false;
 }

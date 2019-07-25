@@ -5,7 +5,7 @@ class SideScroller : public Application
 {
 private:
 	// Constants
-	float GRAVITY = 5.0f;
+	float GRAVITY = 15.0f;
 
 	// Assets
 	Sprite* background1;
