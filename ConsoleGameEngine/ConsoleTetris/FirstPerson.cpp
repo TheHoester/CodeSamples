@@ -4,16 +4,14 @@
  * Constructor (Default Map)
  * @param screenBuffer A pointer to the screenbuffer to be able to draw to.
  * @param input Pointer to the input handler.
- * @param time Pointer to the time handler.
  * @param appID The id of the application.
  * @param width Character width of the screen.
  * @param height Character height of the screen.
  * @param fontWidth Pixel width of the font.
  * @param fontHeight Pixel height of the font.
  */
-FirstPerson::FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), mapWidth(32), mapHeight(32), player(2.0f, 2.0f),
-	direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f)
+FirstPerson::FirstPerson(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : Application(engine, appID, width, height, fontWidth, fontHeight),
+	mapWidth(32), mapHeight(32), player(2.0f, 2.0f), direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f) 
 {
 	GenerateAssets();
 }
@@ -22,7 +20,6 @@ FirstPerson::FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* tim
  * Constructor (Custom Map)
  * @param screenBuffer A pointer to the screenbuffer to be able to draw to.
  * @param input Pointer to the input handler.
- * @param time Pointer to the time handler.
  * @param appID The id of the application.
  * @param width Character width of the screen.
  * @param height Character height of the screen.
@@ -32,14 +29,21 @@ FirstPerson::FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* tim
  * @param mapHeight Character height of the map.
  * @param map The map to be created.
  */
-FirstPerson::FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, int mapWidth, int mapHeight, std::wstring map) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), mapWidth(mapWidth), mapHeight(mapHeight), map(map), player(2.0f, 2.0f),
-	direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f) { }
+FirstPerson::FirstPerson(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight, int mapWidth, int mapHeight, std::wstring map) : Application(engine, appID, width, height, fontWidth, fontHeight), 
+	mapWidth(mapWidth), mapHeight(mapHeight), map(map), player(2.0f, 2.0f), direction(sinf(playerA), cosf(playerA)), moveVelocity(0.0f, 0.0f), playerA(0.0f) { }
 
 /**
  * Destructor
  */
-FirstPerson::~FirstPerson() { }
+FirstPerson::~FirstPerson() 
+{ 
+	if (wallSprite != nullptr)
+		delete wallSprite;
+	if (lampSprite != nullptr)
+		delete lampSprite;
+	if (depthBuffer != nullptr)
+		delete[] depthBuffer;
+}
 
 /*
  * Update()
@@ -51,9 +55,9 @@ int FirstPerson::Update()
 	GameLogic();
 	Draw();
 
-	if (input->IsKeyPressed(VK_RETURN))
+	if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 		Reset();
-	if (input->IsKeyPressed(VK_ESCAPE))
+	if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 	{
 		Reset();
 		return 0;
@@ -69,9 +73,9 @@ int FirstPerson::Update()
 void FirstPerson::GameLogic()
 {
 	// 'W' = Move Forwards
-	if (input->IsKeyHeld('W'))
+	if (InputHandler::Instance().IsKeyHeld('W'))
 	{
-		moveVelocity = direction * moveSpeed * time->GetDeltaTime();
+		moveVelocity = direction * moveSpeed * Time::Instance().DeltaTime();
 		player += moveVelocity;
 
 		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
@@ -79,9 +83,9 @@ void FirstPerson::GameLogic()
 	}
 	
 	// 'S' = Move Backwards
-	if (input->IsKeyHeld('S'))
+	if (InputHandler::Instance().IsKeyHeld('S'))
 	{
-		moveVelocity = direction * moveSpeed * time->GetDeltaTime();
+		moveVelocity = direction * moveSpeed * Time::Instance().DeltaTime();
 		player -= moveVelocity;
 
 		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
@@ -89,20 +93,20 @@ void FirstPerson::GameLogic()
 	}
 
 	// 'A' = Turn Left
-	if (input->IsKeyHeld('A'))
-		playerA -= (rotationSpeed * time->GetDeltaTime());
+	if (InputHandler::Instance().IsKeyHeld('A'))
+		playerA -= (rotationSpeed * Time::Instance().DeltaTime());
 
 	// 'D' = Turn Right
-	if (input->IsKeyHeld('D'))
-		playerA += (rotationSpeed * time->GetDeltaTime());
+	if (InputHandler::Instance().IsKeyHeld('D'))
+		playerA += (rotationSpeed * Time::Instance().DeltaTime());
 
 	direction.x = sinf(playerA);
 	direction.y = cosf(playerA);
 
 	// 'Q' = Move Left
-	if (input->IsKeyHeld('Q'))
+	if (InputHandler::Instance().IsKeyHeld('Q'))
 	{
-		moveVelocity = FVector2(-cosf(playerA), sinf(playerA)) * moveSpeed * time->GetDeltaTime();
+		moveVelocity = FVector2(-cosf(playerA), sinf(playerA)) * moveSpeed * Time::Instance().DeltaTime();
 		player += moveVelocity;
 
 		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
@@ -110,15 +114,26 @@ void FirstPerson::GameLogic()
 	}
 
 	// 'E' = Move Right
-	if (input->IsKeyHeld('E'))
+	if (InputHandler::Instance().IsKeyHeld('E'))
 	{
-		moveVelocity = FVector2(cosf(playerA), -sinf(playerA)) * moveSpeed * time->GetDeltaTime();
+		moveVelocity = FVector2(cosf(playerA), -sinf(playerA)) * moveSpeed * Time::Instance().DeltaTime();
 		player += moveVelocity;
 
 		if (map[((int)player.y * mapWidth) + (int)player.x] == '#')
 			player -= moveVelocity;
 	}
 
+	// Fire Projectile
+	if (InputHandler::Instance().IsKeyPressed(VK_SPACE))
+	{
+		Object ball;
+		ball.position = FVector2(player.x, player.y);
+		float noise = (((float)rand() / (float)RAND_MAX) - 0.5f) * 0.1f;
+		ball.velocity = FVector2(sinf(playerA + noise) * 8.0f, cosf(playerA + noise) * 8.0f);
+		ball.sprite = fireBallSprite;
+		ball.remove = false;
+		objects.push_back(ball);
+	}
 }
 
 /*
@@ -132,20 +147,21 @@ void FirstPerson::Draw()
 		// For each column, calculate the projected ray angle into world space
 		float rayAngle = (playerA - (fov / 2.0f)) + (((float)x / (float)screenWidth) * fov);
 
+		float stepSize = 0.05f;
 		float distanceToWall = 0.0f;
 		bool hitWall = false;
 		bool hitBoundry = false;
 
-		float eyeX = sinf(rayAngle); // Unit Vector for ray in player space
-		float eyeY = cosf(rayAngle);
+		FVector2 eye = FVector2(sinf(rayAngle), cosf(rayAngle)); // Unit Vector for ray in player space
+		float sampleX = 0.0f;
 
 		while (!hitWall && distanceToWall < depthOfField)
 		{
-			distanceToWall += 0.1f;
+			distanceToWall += stepSize;
 
 			// Position of ray hit on the map
-			int testX = (int)(player.x + (eyeX * distanceToWall));
-			int testY = (int)(player.y + (eyeY * distanceToWall));
+			int testX = (int)(player.x + (eye.x * distanceToWall));
+			int testY = (int)(player.y + (eye.y * distanceToWall));
 
 			// Test if ray is out of bounds
 			if (testX < 0 || testX >= mapWidth || testY < 0 || testY >= mapHeight)
@@ -159,27 +175,23 @@ void FirstPerson::Draw()
 				{
 					hitWall = true;
 
-					std::vector<std::pair<float, float>> points; // distance, dot product
-					for (int pX = 0; pX < 2; ++pX)
-					{
-						for (int pY = 0; pY < 2; ++pY)
-						{
-							float vY = (float)testY + pY - player.y;
-							float vX = (float)testX + pX - player.x;
-							float dist = sqrt((vX * vX) + (vY *vY));
-							float dot = ((eyeX * vX) / dist) + ((eyeY * vY) / dist);
-							points.push_back(std::make_pair(dist, dot));
-						}
-					}
+					float cellMidX = (float)testX + 0.5f;
+					float cellMidY = (float)testY + 0.5f;
 
-					// Sort Pairs from closest to farthest
-					sort(points.begin(), points.end(), [](const std::pair<float, float> &left, const std::pair<float, float> &right) { return left.first < right.first; });
+					float testPointX = player.x + eye.x * distanceToWall;
+					float testPointY = player.y + eye.y * distanceToWall;
 
-					float bound = 0.01f;
-					if (acos(points.at(0).second) < bound)
-						hitBoundry = true;
-					if (acos(points.at(1).second) < bound)
-						hitBoundry = true;
+					float testAngle = atan2f((testPointY - cellMidY), (testPointX - cellMidX));
+
+					// Get X sample position.
+					if (testAngle >= (-PI * 0.25f) && testAngle < (PI * 0.25f))
+						sampleX = testPointY - (float)testY;
+					if (testAngle >= (PI * 0.25f) && testAngle < (PI * 0.75f))
+						sampleX = testPointX - (float)testX;
+					if (testAngle < (-PI * 0.25f) && testAngle >= (-PI * 0.75f))
+						sampleX = testPointX - (float)testX;
+					if (testAngle >= (PI * 0.75f) || testAngle < (-PI * 0.75f))
+						sampleX = testPointY - (float)testY;
 				}
 			}
 		}
@@ -188,52 +200,87 @@ void FirstPerson::Draw()
 		int ceiling = (float)(screenHeight / 2.0) - (screenHeight / ((float)distanceToWall));
 		int floor = screenHeight - ceiling;
 
+		// Update depth buffer
+		depthBuffer[x] = distanceToWall;
+
 		for (int y = 0; y < screenHeight; ++y)
 		{
-			if (y < ceiling)
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, ' ');
+			if (y <= ceiling)
+				engine->DrawChar(x, y, ' ');
 			else if (y > ceiling && y <= floor)
 			{
-				// Shade wall based on distance
-				short wallShade = ' ';
-				if (hitBoundry)
-					wallShade = ' ';
-				else if (distanceToWall <= depthOfField / 4.0f) // Very close
-					wallShade = PIXEL_SOLID;
-				else if (distanceToWall <= depthOfField / 3.0f)
-					wallShade = PIXEL_THREEQUARTER;
-				else if (distanceToWall <= depthOfField / 2.0f)
-					wallShade = PIXEL_HALF;
-				else if (distanceToWall <= depthOfField)
-					wallShade = PIXEL_QUARTER;
+				if (distanceToWall < depthOfField)
+				{
+					float sampleY = ((float)y - (float)ceiling) / ((float)floor - (float)ceiling);
+					engine->DrawChar(x, y, wallSprite->SamplePixel(sampleX, sampleY), wallSprite->SampleColour(sampleX, sampleY));
+				}
+				else
+					engine->DrawChar(x, y, ' ');
 
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, wallShade);
 			}
 			else
-			{
-				// Shade floor based on distance
-				short floorShade = ' ';
-				float distance = 1.0f - (((float)y - (screenHeight / 2.0f)) / ((float)screenHeight / 2.0f));
-				if (distance < 0.25f)
-					floorShade = '#';
-				else if (distance < 0.5f)
-					floorShade = 'x';
-				else if (distance < 0.75f)
-					floorShade = '-';
-				else if (distance < 0.9f)
-					floorShade = '.';
+				engine->DrawChar(x, y, PIXEL_SOLID, FG_DARK_GREEN);
+		}
+	}
 
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, floorShade);
+	// Draw Objects
+	for (auto &object : objects)
+	{
+		// Update Object Physics
+		object.position += object.velocity * Time::Instance().DeltaTime();
+
+		// Object Collision
+		if (map[((int)object.position.x * mapWidth) + (int)object.position.y] == '#')
+			object.remove = true;
+
+		FVector2 vec = FVector2(object.position.x - player.x, object.position.y - player.y);
+		float distanceFromPlayer = vec.Magnitude();
+
+		float objectAngle = atan2f(direction.y, direction.x) - atan2f(vec.y, vec.x);
+		if (objectAngle < -PI)
+			objectAngle += 2.0f * PI;
+		if (objectAngle > PI)
+			objectAngle -= 2.0f * PI;
+
+		bool isInPlayerFOV = fabs(objectAngle < fov / 2.0f);
+
+		if (isInPlayerFOV && distanceFromPlayer >= 0.5f && distanceFromPlayer < depthOfField)
+		{
+			float objectCeiling = (float)(screenHeight / 2.0f) - screenHeight / (float)(distanceFromPlayer);
+			float objectFloor = screenHeight - objectCeiling;
+			float objectHeight = objectFloor - objectCeiling;
+			float objectAspectRatio = (float)(object.sprite->Height()) / (float)(object.sprite->Width());
+			float objectWidth = objectHeight / objectAspectRatio;
+			float middleOfObject = (0.5f * (objectAngle / (fov / 2.0f)) + 0.5f) * (float)screenWidth;
+
+			for (float x = 0; x < objectWidth; ++x)
+			{
+				for (float y = 0; y < objectHeight; ++y)
+				{
+					FVector2 sample = FVector2(x / objectWidth, y / objectHeight);
+
+					short character = object.sprite->SamplePixel(sample.x, sample.y);
+					int objectColumn = (int)(middleOfObject + x - (objectWidth / 2.0f));
+					if (objectColumn >= 0 && objectColumn < screenWidth && character != 0 && depthBuffer[objectColumn] >= distanceFromPlayer)
+					{
+						engine->DrawChar(objectColumn, objectCeiling + y, 
+							character, object.sprite->SampleColour(sample.x, sample.y));
+						depthBuffer[objectColumn] = distanceFromPlayer;
+					}
+				}
 			}
 		}
 	}
 
+	// Remove Dead Objects
+	objects.remove_if([](Object &o) { return o.remove; });
+
 	// Display Map
 	for (int x = 0; x < mapWidth; ++x)
 		for (int y = 0; y < mapHeight; ++y)
-			GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, map[(y * mapWidth) + x]);
+			engine->DrawChar(x, y, map[(y * mapWidth) + x]);
 
-	GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, (int)player.x, (int)player.y + 1, 'P');
+	engine->DrawChar((int)player.x, (int)player.y + 1, 'P');
 }
 
 /*
@@ -247,7 +294,7 @@ void FirstPerson::Reset()
 	moveVelocity = FVector2(0.0f, 0.0f);
 	playerA = 0.0f;
 
-	GameEngine::ClearScreen(screenBuffer, screenWidth, screenHeight);
+	engine->ClearScreen();
 }
 
 /*
@@ -288,4 +335,16 @@ void FirstPerson::GenerateAssets()
 	map += L"#............##.............####";
 	map += L"#..............##..............#";
 	map += L"################################";
+
+	wallSprite = new Sprite(L"../Assets/BrickWall.spr");
+	lampSprite = new Sprite(L"../Assets/Lamp.spr");
+	fireBallSprite = new Sprite(L"../Assets/FireBall.spr");
+
+	objects = {
+		{ FVector2(8.5f, 8.5f), FVector2(0.0f, 0.0f), false, lampSprite },
+		{ FVector2(7.5f, 7.5f), FVector2(0.0f, 0.0f), false, lampSprite },
+		{ FVector2(3.5f, 10.5f), FVector2(0.0f, 0.0f), false, lampSprite }
+	};
+
+	depthBuffer = new float[screenWidth];
 }

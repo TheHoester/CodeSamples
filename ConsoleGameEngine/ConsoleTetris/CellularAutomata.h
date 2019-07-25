@@ -22,7 +22,7 @@ private:
 	int GetNeighbors(const int& x, const int& y);
 
 public:
-	CellularAutomata(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 320, int height = 160, int fontWidth = 4, int fontHeight = 4);
+	CellularAutomata(GameEngine* engine, int appID, int width = 320, int height = 160, int fontWidth = 4, int fontHeight = 4);
 	~CellularAutomata(void);
 
 	int Update(void);

@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <list>
 #include <string>
 #include <vector>
 
@@ -8,6 +9,15 @@
 #include "Defines.h"
 #include "GameEngine.h"
 #include "InputHandler.h"
+
+struct Object
+{
+	FVector2 position;
+	FVector2 velocity;
+	bool remove;
+	Sprite* sprite;
+
+};
 
 /**
  * FirstPerson
@@ -20,10 +30,13 @@ private:
 	const int mapWidth;
 	const int mapHeight;
 	std::wstring map;
+	Sprite* wallSprite;
+	Sprite* lampSprite;
+	Sprite* fireBallSprite;
 
 	// Gameplay
 	const float fov = PI / 4.0f;
-	const float depthOfField = 16.0f;
+	const float depthOfField = 12.0f;
 	const float moveSpeed = 5.0f;
 	const float rotationSpeed = 1.5f;
 
@@ -31,6 +44,11 @@ private:
 	FVector2 direction;
 	FVector2 moveVelocity;
 	float playerA;
+
+	// World Objects
+	std::list<Object> objects;
+
+	float* depthBuffer;
 
 	// Game Logic Functions
 	void GameLogic(void) override;
@@ -41,8 +59,8 @@ private:
 	void GenerateAssets(void) override;
 
 public:
-	FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 320, int height = 160, int fontWidth = 4, int fontHeight = 4);
-	FirstPerson(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, 
+	FirstPerson(GameEngine* engine, int appID, int width = 220, int height = 110, int fontWidth = 6, int fontHeight = 6);
+	FirstPerson(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight,
 		int mapWidth, int mapHeight, std::wstring map);
 	~FirstPerson(void);
 

@@ -11,10 +11,9 @@
  * @param fontWidth Pixel width of the font.
  * @param fontHeight Pixel height of the font.
  */
-Snake::Snake(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight),
-	currentDirection(3), movementCounter(0.0f), move(false), score(0), gameOver(false)
-{
+Snake::Snake(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : Application(engine, appID, width, height, fontWidth, fontHeight),
+	currentDirection(3), movementCounter(0.0f), move(false), score(0), gameOver(false) 
+{ 
 	GenerateAssets();
 }
 
@@ -41,9 +40,9 @@ int Snake::Update()
 	}
 	else
 	{
-		if (input->IsKeyPressed(VK_RETURN))
+		if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 			Reset();
-		else if (input->IsKeyPressed(VK_ESCAPE))
+		else if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 		{
 			Reset();
 			return 0;
@@ -59,14 +58,14 @@ int Snake::Update()
  */
 void Snake::GameLogic()
 {
-	movementCounter += time->GetDeltaTime();
+	movementCounter += Time::Instance().DeltaTime();
 	move = (movementCounter >= movementDelay);
 
 	// Input Handling
-	if (input->IsKeyPressed(VK_RIGHT)) currentDirection = 0;
-	else if (input->IsKeyPressed(VK_LEFT)) currentDirection = 1;
-	else if (input->IsKeyPressed(VK_DOWN)) currentDirection = 2;
-	else if (input->IsKeyPressed(VK_UP)) currentDirection = 3;
+	if (InputHandler::Instance().IsKeyPressed(VK_RIGHT)) currentDirection = 0;
+	else if (InputHandler::Instance().IsKeyPressed(VK_LEFT)) currentDirection = 1;
+	else if (InputHandler::Instance().IsKeyPressed(VK_DOWN)) currentDirection = 2;
+	else if (InputHandler::Instance().IsKeyPressed(VK_UP)) currentDirection = 3;
 
 	// Movement
 	if (move)
@@ -90,19 +89,19 @@ void Snake::Draw()
 			switch (field[(y * fieldWidth) + x])
 			{
 			case 0:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, ' ', BG_DARK_GREY);
+				engine->DrawChar(x + 2, y + 2, ' ', BG_DARK_GREY);
 				break;
 			case 1:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, 'O', FG_GREEN | BG_DARK_GREY);
+				engine->DrawChar(x + 2, y + 2, 'O', FG_GREEN | BG_DARK_GREY);
 				break;
 			case 2:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, 'o', FG_GREEN | BG_DARK_GREY);
+				engine->DrawChar(x + 2, y + 2, 'o', FG_GREEN | BG_DARK_GREY);
 				break;
 			case 3:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, '#', FG_YELLOW | BG_DARK_GREY);
+				engine->DrawChar(x + 2, y + 2, '#', FG_YELLOW | BG_DARK_GREY);
 				break;
 			case 4:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2);
+				engine->DrawChar(x + 2, y + 2);
 				break;
 			}
 		}
@@ -110,14 +109,14 @@ void Snake::Draw()
 
 	// Draw Score
 	std::wstring scoreText = L"SCORE: " + std::to_wstring(score);
-	GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 2, scoreText, FG_WHITE);
+	engine->DrawString(fieldWidth + 6, 2, scoreText, FG_WHITE);
 
 	// Gameover screen
 	if (gameOver)
 	{
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 4, L"GAME OVER!!", FG_WHITE);
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 5, L"Press [ENTER] to retry", FG_WHITE);
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 6, L"Press [ESCAPE] to exit", FG_WHITE);
+		engine->DrawString(fieldWidth + 6, 4, L"GAME OVER!!", FG_WHITE);
+		engine->DrawString(fieldWidth + 6, 5, L"Press [ENTER] to retry", FG_WHITE);
+		engine->DrawString(fieldWidth + 6, 6, L"Press [ESCAPE] to exit", FG_WHITE);
 	}
 }
 
@@ -142,7 +141,7 @@ void Snake::Reset()
 
 	GenerateAssets();
 
-	GameEngine::ClearScreen(screenBuffer, screenWidth, screenHeight);
+	engine->ClearScreen();
 }
 
 

@@ -39,7 +39,7 @@ private:
 	void SetVisited(const Vector2& pos);
 
 public:
-	AutoMaze(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 160, int height = 80, int fontWidth = 8, int fontHeight = 8, int mazeWidth = 40, int mazeHeight = 20);
+	AutoMaze(GameEngine* engine, int appID, int width = 160, int height = 80, int fontWidth = 8, int fontHeight = 8, int mazeWidth = 40, int mazeHeight = 20);
 	~AutoMaze(void);
 
 	int Update(void) override;

@@ -13,8 +13,8 @@
  * @param mazeWidth The cell width of the maze.
  * @param mazeHeight The cell height of the maze.
  */
-AutoMaze::AutoMaze(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, int mazeWidth, int mazeHeight) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), mazeWidth(mazeWidth), mazeHeight(mazeHeight), visitedCount(0), startPosition(0, 0)
+AutoMaze::AutoMaze(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight, int mazeWidth, int mazeHeight) : Application(engine, appID, width, height, fontWidth, fontHeight),
+	mazeWidth(mazeWidth), mazeHeight(mazeHeight), visitedCount(0), startPosition(0, 0)
 {
 	visited = new bool[mazeWidth * mazeHeight];
 	memset(visited, 0, sizeof(bool) * mazeWidth * mazeHeight);
@@ -41,9 +41,9 @@ int AutoMaze::Update()
 	GameLogic();
 	Draw();
 
-	if (input->IsKeyPressed(VK_RETURN))
+	if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 		Reset();
-	if (input->IsKeyPressed(VK_ESCAPE))
+	if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 	{
 		Reset();
 		return 0;
@@ -75,16 +75,16 @@ void AutoMaze::GameLogic()
 			// Draw where the wall use to be
 			if (currentNeighbour.y < path.top().y) // Up
 				for (int i = 0; i < pathWidth; i++)
-					GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, (path.top().x * (pathWidth + 1)) + i, (path.top().y * (pathWidth + 1)) - 1 , PIXEL_SOLID, FG_WHITE);
+					engine->DrawChar((path.top().x * (pathWidth + 1)) + i, (path.top().y * (pathWidth + 1)) - 1 , PIXEL_SOLID, FG_WHITE);
 			else if (currentNeighbour.x > path.top().x) // Right
 				for (int i = 0; i < pathWidth; i++)
-					GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, (path.top().x * (pathWidth + 1)) + pathWidth, (path.top().y * (pathWidth + 1)) + i, PIXEL_SOLID, FG_WHITE);
+					engine->DrawChar((path.top().x * (pathWidth + 1)) + pathWidth, (path.top().y * (pathWidth + 1)) + i, PIXEL_SOLID, FG_WHITE);
 			else if (currentNeighbour.y > path.top().y) // Down
 				for (int i = 0; i < pathWidth; i++)
-					GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, (path.top().x * (pathWidth + 1)) + i, (path.top().y * (pathWidth + 1)) + pathWidth, PIXEL_SOLID, FG_WHITE);
+					engine->DrawChar((path.top().x * (pathWidth + 1)) + i, (path.top().y * (pathWidth + 1)) + pathWidth, PIXEL_SOLID, FG_WHITE);
 			else if (currentNeighbour.x < path.top().x) // Left
 				for (int i = 0; i < pathWidth; i++)
-					GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, (path.top().x * (pathWidth + 1)) - 1, (path.top().y * (pathWidth + 1)) + i, PIXEL_SOLID, FG_WHITE);
+					engine->DrawChar((path.top().x * (pathWidth + 1)) - 1, (path.top().y * (pathWidth + 1)) + i, PIXEL_SOLID, FG_WHITE);
 
 			path.push(currentNeighbour);
 		}	
@@ -102,13 +102,13 @@ void AutoMaze::Draw()
 		for (int y = 0; y < mazeHeight; ++y)
 		{
 			if (GetVisited(x, y))
-				GameEngine::DrawRectFill(screenBuffer, screenWidth, screenHeight, x * (pathWidth + 1), y * (pathWidth + 1), (x * (pathWidth + 1)) + pathWidth - 1, (y * (pathWidth + 1)) + pathWidth - 1, PIXEL_SOLID, FG_WHITE, PIXEL_SOLID, FG_WHITE);
+				engine->DrawRectFill(x * (pathWidth + 1), y * (pathWidth + 1), (x * (pathWidth + 1)) + pathWidth - 1, (y * (pathWidth + 1)) + pathWidth - 1, PIXEL_SOLID, FG_WHITE, PIXEL_SOLID, FG_WHITE);
 			else
-				GameEngine::DrawRectFill(screenBuffer, screenWidth, screenHeight, x * (pathWidth + 1), y * (pathWidth + 1), (x * (pathWidth + 1)) + pathWidth - 1, (y * (pathWidth + 1)) + pathWidth - 1, PIXEL_SOLID, FG_BLUE, PIXEL_SOLID, FG_BLUE);
+				engine->DrawRectFill(x * (pathWidth + 1), y * (pathWidth + 1), (x * (pathWidth + 1)) + pathWidth - 1, (y * (pathWidth + 1)) + pathWidth - 1, PIXEL_SOLID, FG_BLUE, PIXEL_SOLID, FG_BLUE);
 		}
 	}
 
-	GameEngine::DrawRectFill(screenBuffer, screenWidth, screenHeight, 
+	engine->DrawRectFill(
 		 path.top().x * (pathWidth + 1),                   path.top().y * (pathWidth + 1), 
 		(path.top().x * (pathWidth + 1)) + pathWidth - 1, (path.top().y * (pathWidth + 1)) + pathWidth - 1, 
 		PIXEL_SOLID, FG_GREEN, PIXEL_SOLID, FG_GREEN);
@@ -131,7 +131,7 @@ void AutoMaze::Reset()
 	visitedCount = 0;
 
 	GenerateAssets();
-	GameEngine::ClearScreen(screenBuffer, screenWidth, screenHeight);
+	engine->ClearScreen();
 }
 
 /*

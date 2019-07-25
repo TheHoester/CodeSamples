@@ -1,13 +1,19 @@
 #pragma once
+#include <iostream>
 #include <Windows.h>
+
+#include "Singleton.h"
+#include "Time.h"
 
 namespace Engine { namespace Graphics {
 	/**
 	 * RenderEngine
 	 * Handles drawing to the console.
 	 */
-	class RenderEngine
+	class RenderEngine : public Singleton<RenderEngine>
 	{
+		friend class Singleton<RenderEngine>;
+
 	private:
 		HANDLE console;
 		DWORD bytesWritten;
@@ -16,11 +22,12 @@ namespace Engine { namespace Graphics {
 		int screenWidth;
 		int screenHeight;
 
+		RenderEngine(void) { }
+		
 	public:
-		RenderEngine(int width, int height, int fontWidth = 8, int fontHeight = 16);
 		~RenderEngine(void);
 
 		void SetupWindow(const int& width, const int& height, const int& fontWidth = 8, const int& fontHeight = 16);
-		void Draw(const wchar_t* title, const CHAR_INFO* characterArray);
+		void Draw(const wchar_t* title, const CHAR_INFO* characterArray, const float& runTime, const float& renderTime);
 	};
 } }

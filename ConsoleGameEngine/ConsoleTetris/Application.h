@@ -12,16 +12,15 @@ using namespace Engine;
 class Application
 {
 protected:
+	GameEngine* engine;
+
 	// Console Window
 	const int screenWidth;
 	const int screenHeight;
 	const int fontWidth;
 	const int fontHeight;
-	CHAR_INFO* screenBuffer;
 
 	// Gameplay
-	InputHandler* input;
-	Time* time;
 	const int appID;
 
 	// Game Logic Functions
@@ -35,15 +34,13 @@ protected:
 	static unsigned char* GenerateFieldOpenTopBox(int fieldWidth, int fieldHeight, int character);
 
 public:
-	Application(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
+	Application(GameEngine* engine, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~Application(void);
 	
 	int ScreenWidth(void) const;
 	int ScreenHeight(void) const;
 	int FontWidth(void) const;
 	int FontHeight(void) const;
-
-	void SetScreenBuffer(CHAR_INFO* buffer);
 
 	virtual int Update(void) = 0;
 	virtual void Reset(void);

@@ -3,25 +3,12 @@
 using namespace Engine::Graphics;
 
 /**
- * Constructor
- * @param width The width of the console in characters.
- * @param height The height of the console in characters.
- * @param fontWidth The width of the characters in pixels.
- * @param fontHeight The height of the characters in pixels.
- */
-RenderEngine::RenderEngine(int width, int height, int fontWidth, int fontHeight) : bytesWritten(0)
-{
-	// Gets the Console Screen Buffer
-	console = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetupWindow(width, height, fontWidth, fontHeight);
-}
-
-/**
  * Destructor
  */
 RenderEngine::~RenderEngine()
 {
-	CloseHandle(console);
+	if (console != NULL)
+		CloseHandle(console);
 }
 
 /**
@@ -34,7 +21,13 @@ RenderEngine::~RenderEngine()
  */
 void RenderEngine::SetupWindow(const int& width, const int& height, const int& fontWidth, const int& fontHeight)
 {
-	// TODO: Error check console handle
+	// Checks if this is the first time the window is setup.
+	if (console == NULL)
+	{
+		// TODO: Error check console handle
+		console = GetStdHandle(STD_OUTPUT_HANDLE);
+		bytesWritten = 0;
+	}
 
 	screenWidth = width;
 	screenHeight = height;
@@ -81,8 +74,10 @@ void RenderEngine::SetupWindow(const int& width, const int& height, const int& f
  * @param title The name of the program to be displayed on the top bar.
  * @param characterArray The array of characters that will be drawn to the console.
  */
-void RenderEngine::Draw(const wchar_t* title, const CHAR_INFO* characterArray)
+void RenderEngine::Draw(const wchar_t* title, const CHAR_INFO* characterArray, const float& runTime, const float& renderTime)
 {
-	SetConsoleTitle(title);
+	wchar_t s[256];
+	swprintf_s(s, 256, L"%s - FPS: %3.2f - Run: %3.2f - Rend: %3.2f", title, 1.0f / Time::Instance().DeltaTime(), runTime, renderTime);
+	SetConsoleTitle(s);
 	WriteConsoleOutput(console, characterArray, { (short)screenWidth, (short)screenHeight }, { 0,0 }, &windowRect);
 }

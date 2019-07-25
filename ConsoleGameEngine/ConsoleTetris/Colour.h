@@ -15,6 +15,7 @@
 #define FG_MAGENTA 0x000D
 #define FG_YELLOW 0x000E
 #define FG_WHITE 0x000F
+
 #define BG_BLACK 0x0000
 #define BG_DARK_BLUE 0x0010
 #define BG_DARK_GREEN 0x0020

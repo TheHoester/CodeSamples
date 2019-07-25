@@ -11,7 +11,7 @@
  * @param fontWidth Pixel width of the font.
  * @param fontHeight Pixel height of the font.
  */
-Application::Application(CHAR_INFO* buffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) : screenBuffer(buffer), input(input), time(time), 
+Application::Application(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : engine(engine), 
 	appID(appID), screenWidth(width), screenHeight(height), fontWidth(fontWidth), fontHeight(fontHeight) { }
 
 /**
@@ -23,8 +23,6 @@ int Application::ScreenWidth() const { return screenWidth; }
 int Application::ScreenHeight() const { return screenHeight; }
 int Application::FontWidth() const { return fontWidth; }
 int Application::FontHeight() const { return fontHeight; }
-
-void Application::SetScreenBuffer(CHAR_INFO* buffer) { screenBuffer = buffer;  }
 
 /**
  * Reset()

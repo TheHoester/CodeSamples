@@ -41,7 +41,7 @@ private:
 	void NewPellet(void);
 
 public:
-	Snake(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
+	Snake(GameEngine* engine, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~Snake(void);
 
 	int Update(void) override;

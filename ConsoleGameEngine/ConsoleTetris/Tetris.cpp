@@ -9,11 +9,10 @@
  * @param fieldWidth Character width of the play field.
  * @param fieldHeight Character height of the play field.
  */
-Tetris::Tetris(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) : 
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight),
-	currentPiece(rand() % 7), currentRotation(0), currentX(fieldWidth / 2), currentY(0), inputDelay(0.075f), inputCounter(0.075f),
-	canInput(false), movementDelay(1.0f), movementCounter(0.0f), forceDown(false), pieceCount(0), gameOver(false)
-{
+Tetris::Tetris(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : Application(engine, appID, width, height, fontWidth, fontHeight),
+	currentPiece(rand() % 7), currentRotation(0), currentX(fieldWidth / 2), currentY(0), inputDelay(0.075f), inputCounter(0.075f), canInput(false), 
+	movementDelay(1.0f), movementCounter(0.0f), forceDown(false), pieceCount(0), gameOver(false) 
+{ 
 	GenerateAssets();
 }
 
@@ -36,9 +35,9 @@ int Tetris::Update()
 	}
 	else
 	{
-		if (input->IsKeyPressed(VK_RETURN))
+		if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 			Reset();
-		else if (input->IsKeyPressed(VK_ESCAPE))
+		else if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 		{
 			Reset();
 			return 0;
@@ -74,7 +73,7 @@ void Tetris::Reset()
 	score = 0;
 	gameOver = false;
 
-	GameEngine::ClearScreen(screenBuffer, screenWidth, screenHeight);
+	engine->ClearScreen();
 }
 
 /**
@@ -84,14 +83,14 @@ void Tetris::Reset()
 void Tetris::GameLogic()
 {
 	if (inputCounter < inputDelay)
-		inputCounter += time->GetDeltaTime();
+		inputCounter += Time::Instance().DeltaTime();
 	canInput = (inputCounter >= inputDelay);
 
 	bool check = false;
 
-	if (input->IsKeyHeld(VK_RIGHT)) check = true;
-	else if (input->IsKeyHeld(VK_LEFT)) check = true;
-	else if (input->IsKeyHeld(VK_DOWN)) check = true;
+	if (InputHandler::Instance().IsKeyHeld(VK_RIGHT)) check = true;
+	else if (InputHandler::Instance().IsKeyHeld(VK_LEFT)) check = true;
+	else if (InputHandler::Instance().IsKeyHeld(VK_DOWN)) check = true;
 
 	if (!check)
 	{
@@ -101,18 +100,18 @@ void Tetris::GameLogic()
 	else if (check && canInput)
 		inputCounter = 0.0f;
 
-	movementCounter += time->GetDeltaTime();
+	movementCounter += Time::Instance().DeltaTime();
 	forceDown = (movementCounter >= movementDelay);
 
 	// Input Handling
 	if (canInput)
 	{
-		currentX += (input->IsKeyHeld(VK_RIGHT) && DoesPieceFit(currentPiece, currentRotation, currentX + 1, currentY)) ? 1 : 0; // Right Key Pressed
-		currentX -= (input->IsKeyHeld(VK_LEFT) && DoesPieceFit(currentPiece, currentRotation, currentX - 1, currentY)) ? 1 : 0; // Left Key Pressed
-		currentY += (input->IsKeyHeld(VK_DOWN) && DoesPieceFit(currentPiece, currentRotation, currentX, currentY + 1)) ? 1 : 0; // Down Key Pressed
+		currentX += (InputHandler::Instance().IsKeyHeld(VK_RIGHT) && DoesPieceFit(currentPiece, currentRotation, currentX + 1, currentY)) ? 1 : 0; // Right Key Pressed
+		currentX -= (InputHandler::Instance().IsKeyHeld(VK_LEFT) && DoesPieceFit(currentPiece, currentRotation, currentX - 1, currentY)) ? 1 : 0; // Left Key Pressed
+		currentY += (InputHandler::Instance().IsKeyHeld(VK_DOWN) && DoesPieceFit(currentPiece, currentRotation, currentX, currentY + 1)) ? 1 : 0; // Down Key Pressed
 	}
 
-	currentRotation += (input->IsKeyPressed('Z') && DoesPieceFit(currentPiece, currentRotation + 1, currentX, currentY)) ? 1 : 0; // Rotation Key Pressed
+	currentRotation += (InputHandler::Instance().IsKeyPressed('Z') && DoesPieceFit(currentPiece, currentRotation + 1, currentX, currentY)) ? 1 : 0; // Rotation Key Pressed
 
 	// Falling Physics
 	if (forceDown)
@@ -182,13 +181,13 @@ void Tetris::Draw()
 			switch (field[(y * fieldWidth) + x])
 			{
 			case 0:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, ' ');
+				engine->DrawChar(x + 2, y + 2, ' ');
 				break;
 			case 8: case 9:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2);
+				engine->DrawChar(x + 2, y + 2);
 				break;
 			default:
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x + 2, y + 2, PIXEL_SOLID, tetroColours[field[(y * fieldWidth) + x] - 1]);
+				engine->DrawChar(x + 2, y + 2, PIXEL_SOLID, tetroColours[field[(y * fieldWidth) + x] - 1]);
 			}
 		}
 	}
@@ -197,18 +196,18 @@ void Tetris::Draw()
 	for (int x = 0; x < assetWidth; ++x)
 		for (int y = 0; y < assetWidth; ++y)
 			if (tetrominos[currentPiece][Rotate(x, y, currentRotation)] == L'X')
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, currentX + x + 2, currentY + y + 2, PIXEL_SOLID, tetroColours[currentPiece]);
+				engine->DrawChar(currentX + x + 2, currentY + y + 2, PIXEL_SOLID, tetroColours[currentPiece]);
 
 	// Draw Score
 	std::wstring scoreText = L"SCORE: " + std::to_wstring(score);
-	GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 2, scoreText, FG_WHITE);
+	engine->DrawString(fieldWidth + 6, 2, scoreText, FG_WHITE);
 
 	// Gameover screen
 	if (gameOver)
 	{
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 4, L"GAME OVER!!", FG_WHITE);
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 5, L"Press [ENTER] to retry", FG_WHITE);
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, fieldWidth + 6, 6, L"Press [ESCAPE] to exit", FG_WHITE);
+		engine->DrawString(fieldWidth + 6, 4, L"GAME OVER!!", FG_WHITE);
+		engine->DrawString(fieldWidth + 6, 5, L"Press [ENTER] to retry", FG_WHITE);
+		engine->DrawString(fieldWidth + 6, 6, L"Press [ESCAPE] to exit", FG_WHITE);
 	}
 
 	// Line Completion

@@ -12,11 +12,8 @@
  * @param fontHeight Pixel height of the font.
  * @param radus The radius of the ball.
  */
-BouncingBall::BouncingBall(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight, int radius) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), radius(radius), position(screenWidth / 2, screenHeight / 2), direction(1.0f, 1.0f), speed(30.0f)
-{
-
-}
+BouncingBall::BouncingBall(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight, int radius) : Application(engine, appID, width, height, fontWidth, fontHeight),
+	radius(radius), colour(1), position(screenWidth / 2, screenHeight / 2), velocity(60.0f, 60.0f), acceleration(0.0f, 0.0f), force(10.0f), mass(1.0f), state(1) { }
 
 /**
  * Destructor
@@ -36,9 +33,9 @@ int BouncingBall::Update()
 	GameLogic();
 	Draw();
 
-	if (input->IsKeyPressed(VK_RETURN))
+	if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 		Reset();
-	if (input->IsKeyPressed(VK_ESCAPE))
+	if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 	{
 		Reset();
 		return 0;
@@ -53,29 +50,69 @@ int BouncingBall::Update()
  */
 void BouncingBall::GameLogic()
 {
-	position += (direction * speed * time->GetDeltaTime());
-
-	// Boundary Check
-	if (position.x < radius + 1.0f)
+	if (InputHandler::Instance().IsKeyPressed('1'))
+		state = 1;
+	if (InputHandler::Instance().IsKeyPressed('2'))
+		state = 2;
+	if (InputHandler::Instance().IsKeyPressed('3'))
 	{
-		position.x = radius + 1.0f;
-		direction.x *= -1;
-	}
-	else if (position.x > screenWidth - radius - 1.0f)
-	{
-		position.x = screenWidth - radius - 1.0f;
-		direction.x *= -1;
+		state = 3;
+		velocity = FVector2(0.0f, 0.0f);
 	}
 
-	if (position.y < radius + 1.0f)
+	if (state == 1)
 	{
-		position.y = radius + 1.0f;
-		direction.y *= -1;
+		if (InputHandler::Instance().IsMouseButtonPressed(0))
+		{
+			++colour;
+			if (colour >= 16)
+				colour = 1;
+		}
+
+		position.x = InputHandler::Instance().GetMousePosition().x;
+		position.y = InputHandler::Instance().GetMousePosition().y;
 	}
-	else if (position.y > screenHeight - radius - 1.0f)
+	else if (state == 2)
 	{
-		position.y = screenHeight - radius - 1.0f;
-		direction.y *= -1;
+		acceleration *= 0.0f;
+		if (InputHandler::Instance().IsMouseButtonPressed(0))
+		{
+			FVector2 direction = (position - InputHandler::Instance().GetMousePosition()).Normalized();
+			acceleration += direction * force;
+		}
+
+		velocity += acceleration;
+		position += (velocity * Time::Instance().DeltaTime());
+
+		// Boundary Check
+		if (position.x < radius + 1.0f)
+		{
+			position.x = radius + 1.0f;
+			velocity.x *= -1;
+		}
+		else if (position.x > screenWidth - radius - 1.0f)
+		{
+			position.x = screenWidth - radius - 1.0f;
+			velocity.x *= -1;
+		}
+
+		if (position.y < radius + 1.0f)
+		{
+			position.y = radius + 1.0f;
+			velocity.y *= -1;
+		}
+		else if (position.y > screenHeight - radius - 1.0f)
+		{
+			position.y = screenHeight - radius - 1.0f;
+			velocity.y *= -1;
+		}
+	}
+	else if (state == 3)
+	{
+		FVector2 direction = (InputHandler::Instance().GetMousePosition() - position).Normalized();
+		acceleration = direction * 0.75f;
+		velocity += acceleration;
+		position += velocity * Time::Instance().DeltaTime();
 	}
 }
 
@@ -91,15 +128,14 @@ void BouncingBall::Draw()
 		for (int y = 0; y < screenHeight; ++y)
 		{
 			if (x == 0 || y == 0 || x == screenWidth - 1 || y == screenHeight - 1)
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, PIXEL_SOLID, FG_DARK_BLUE);
+				engine->DrawChar(x, y, PIXEL_SOLID, FG_DARK_BLUE);
 			else
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, ' ');
+				engine->DrawChar(x, y, ' ');
 		}
 	}
-	
 
 	// Draw Ball
-	GameEngine::DrawCircle(screenBuffer, screenWidth, screenHeight, position.x, position.y, radius, PIXEL_SOLID, FG_RED);
+	engine->DrawCircle(position.x, position.y, radius, PIXEL_SOLID, colour);
 }
 
 /**
@@ -109,7 +145,7 @@ void BouncingBall::Draw()
 void BouncingBall::Reset()
 {
 	position = FVector2(screenWidth / 2, screenHeight / 2);
-	direction = FVector2(1.0f, 1.0f);
+	velocity = FVector2(60.0f, 60.0f);
 }
 
 void BouncingBall::GenerateAssets() { }

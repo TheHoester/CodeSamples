@@ -54,7 +54,7 @@ private:
 	bool DoesPieceFit(const int& tetromino, const int& rotation, const int& posX, const int& posY);
 		
 public:
-	Tetris(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
+	Tetris(GameEngine* engine, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~Tetris(void);
 
 	int Update(void) override;

@@ -3,10 +3,14 @@
 #include "BouncingBall.h"
 #include "CellularAutomata.h"
 #include "FirstPerson.h"
+#include "Frogger.h"
 #include "GameEngine.h"
 #include "MainMenu.h"
+#include "Racing.h"
+#include "SideScroller.h"
 #include "Snake.h"
 #include "Tetris.h"
+#include "ThreeDimentions.h"
 
 using namespace Engine;
 
@@ -18,7 +22,7 @@ using namespace Engine;
 class ArcadeGames : public GameEngine
 {
 private:
-	const int numOfStates = 7;
+	const int numOfStates = 11;
 
 	Application** gameStates;
 	int state;
@@ -28,7 +32,7 @@ private:
 	bool RunGame(void) override;
 
 	// Misc Functions
-	void UpdateScreenBuffer(void);
+	void UpdateWindow(void);
 
 public:
 	ArcadeGames(std::wstring name = L"Arcade Games", int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);

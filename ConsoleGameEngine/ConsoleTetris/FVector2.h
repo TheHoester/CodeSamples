@@ -3,8 +3,8 @@
 
 namespace Engine { namespace Physics {
 	/**
-		* FVector2
-		*/
+	 * FVector2
+	 */
 	struct FVector2
 	{
 		float x;

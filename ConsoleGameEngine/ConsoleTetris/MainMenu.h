@@ -12,7 +12,7 @@ class MainMenu : public Application
 {
 private:
 	// Assets
-	const int numMenuOptions = 6;
+	const int numMenuOptions = 10;
 	wstring* menuOptions;
 	int menuWidth;
 	int menuHeight;
@@ -33,7 +33,7 @@ private:
 	void GenerateAssets(void) override;
 
 public:
-	MainMenu(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
+	MainMenu(GameEngine* engine, int appID, int width = 80, int height = 30, int fontWidth = 8, int fontHeight = 16);
 	~MainMenu(void);
 
 	int Update(void) override;

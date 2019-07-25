@@ -12,11 +12,15 @@ class BouncingBall : public Application
 private:
 	// Assets
 	int radius;
+	short colour;
 
 	// Gameplay
 	FVector2 position;
-	FVector2 direction;
-	float speed;
+	FVector2 velocity;
+	FVector2 acceleration;
+	float force;
+	float mass;
+	int state;
 
 	// Game Logic Functions
 	void GameLogic(void);
@@ -27,7 +31,7 @@ private:
 	void GenerateAssets(void) override;
 
 public:
-	BouncingBall(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width = 120, int height = 60, int fontWidth = 10, int fontHeight = 10, int radius = 2);
+	BouncingBall(GameEngine* engine, int appID, int width = 240, int height = 120, int fontWidth = 4, int fontHeight = 4, int radius = 7);
 	~BouncingBall(void);
 
 	int Update(void) override;

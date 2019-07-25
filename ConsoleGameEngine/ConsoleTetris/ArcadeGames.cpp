@@ -8,7 +8,7 @@
  * @param width Pixel width of the font.
  * @param height Pixel height of the font.
  */
-ArcadeGames::ArcadeGames(std::wstring name, int width, int height, int fontWidth, int fontHeight) : GameEngine(name, width, height, fontWidth, fontHeight), state(0) { }
+ArcadeGames::ArcadeGames(std::wstring name, int width, int height, int fontWidth, int fontHeight) : GameEngine(name, width, height, fontWidth, fontHeight) { }
 
 /*
  * Destructor
@@ -31,15 +31,19 @@ ArcadeGames::~ArcadeGames()
  */
 bool ArcadeGames::CreateGame()
 {
-	gameStates = new Application*[7];
-
-	gameStates[0] = new MainMenu(screenBuffer, inputHandler, time, 0);
-	gameStates[1] = new Tetris(screenBuffer, inputHandler, time, 1);
-	gameStates[2] = new Snake(screenBuffer, inputHandler, time, 2);
-	gameStates[3] = new FirstPerson(screenBuffer, inputHandler, time, 3);
-	gameStates[4] = new BouncingBall(screenBuffer, inputHandler, time, 4);
-	gameStates[5] = new CellularAutomata(screenBuffer, inputHandler, time, 5);
-	gameStates[6] = new AutoMaze(screenBuffer, inputHandler, time, 6);
+	state = 0;
+	gameStates = new Application*[numOfStates];
+	gameStates[0] = new MainMenu(this, 0);
+	gameStates[1] = new Tetris(this, 1);
+	gameStates[2] = new Snake(this, 2);
+	gameStates[3] = new FirstPerson(this, 3);
+	gameStates[4] = new BouncingBall(this, 4);
+	gameStates[5] = new CellularAutomata(this, 5);
+	gameStates[6] = new AutoMaze(this, 6);
+	gameStates[7] = new Racing(this, 7);
+	gameStates[8] = new Frogger(this, 8);
+	gameStates[9] = new ThreeDimentions(this, 9);
+	gameStates[10] = new SideScroller(this, 10);
 
 	return true;
 }
@@ -59,11 +63,7 @@ bool ArcadeGames::RunGame()
 		if (state == -1)
 			close = true;
 		else
-		{
-			UpdateScreenBuffer();
-			memset(screenBuffer, 0, sizeof(CHAR_INFO) * gameStates[state]->ScreenWidth() * gameStates[state]->ScreenHeight());
-			renderer->SetupWindow(gameStates[state]->ScreenWidth(), gameStates[state]->ScreenHeight(), gameStates[state]->FontWidth(), gameStates[state]->FontHeight());
-		}
+			UpdateWindow();
 	}
 
 	return true;
@@ -74,14 +74,17 @@ bool ArcadeGames::RunGame()
  * Makes sure that the applications all recieve the new pointer been the screen buffer is changed.
  * (Different apps require screens of varying sizes).
  */
-void ArcadeGames::UpdateScreenBuffer()
+void ArcadeGames::UpdateWindow()
 {
+	screenWidth = gameStates[state]->ScreenWidth();
+	screenHeight = gameStates[state]->ScreenHeight();
+
 	// Resets screen buffer ready for the new app
 	if (screenBuffer != NULL)
 		delete[] screenBuffer;
 
-	screenBuffer = new CHAR_INFO[gameStates[state]->ScreenWidth() * gameStates[state]->ScreenHeight()];
+	screenBuffer = new CHAR_INFO[screenWidth * screenHeight];
+	memset(screenBuffer, 0, sizeof(CHAR_INFO) * screenWidth * screenHeight);
 
-	for (int i = 0; i < 7; ++i)
-		gameStates[i]->SetScreenBuffer(screenBuffer);
+	RenderEngine::Instance().SetupWindow(screenWidth, screenHeight, gameStates[state]->FontWidth(), gameStates[state]->FontHeight());
 }

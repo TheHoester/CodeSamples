@@ -11,8 +11,7 @@
  * @param fontWidth Pixel width of the font.
  * @param fontHeight Pixel height of the font.
  */
-CellularAutomata::CellularAutomata(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight)
+CellularAutomata::CellularAutomata(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : Application(engine, appID, width, height, fontWidth, fontHeight)
 {
 	currentState = new bool[screenWidth * screenHeight];
 	newState = new bool[screenWidth * screenHeight];
@@ -53,17 +52,17 @@ int CellularAutomata::Update()
 
 			// Draw Cell
 			if (newState[(y * screenWidth) + x])
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y);
+				engine->DrawChar(x, y);
 			else
-				GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, x, y, ' ');
+				engine->DrawChar(x, y, ' ');
 		}
 	}
 
 	memcpy(currentState, newState, sizeof(bool) * screenWidth * screenHeight);
 
-	if (input->IsKeyPressed(VK_RETURN))
+	if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 		Reset();
-	if (input->IsKeyPressed(VK_ESCAPE))
+	if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 	{
 		Reset();
 		return 0;

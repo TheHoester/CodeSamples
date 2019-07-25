@@ -16,7 +16,11 @@ float FVector2::Magnitude() const
 
 FVector2 FVector2::Normalized() const
 {
-	return *this / Magnitude();
+	float mag = Magnitude();
+	if (mag == 0.0f)
+		return FVector2(0.0f, 0.0f);
+	else
+		return *this / Magnitude();
 }
 
 // MATH OPERATORS ######################################################################################################################

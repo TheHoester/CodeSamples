@@ -11,8 +11,8 @@
  * @param fontWidth Pixel width of the font.
  * @param fontHeight Pixel height of the font.
  */
-MainMenu::MainMenu(CHAR_INFO* screenBuffer, InputHandler* input, Time* time, int appID, int width, int height, int fontWidth, int fontHeight) :
-	Application(screenBuffer, input, time, appID, width, height, fontWidth, fontHeight), currentOption(1), inputDelayCounter(0), calculateInput(false)
+MainMenu::MainMenu(GameEngine* engine, int appID, int width, int height, int fontWidth, int fontHeight) : Application(engine, appID, width, height, fontWidth, fontHeight),
+	currentOption(1), inputDelayCounter(0), calculateInput(false) 
 {
 	GenerateAssets();
 }
@@ -36,9 +36,9 @@ int MainMenu::Update()
 	GameLogic();
 	Draw();
 
-	if (input->IsKeyPressed(VK_ESCAPE))
+	if (InputHandler::Instance().IsKeyPressed(VK_ESCAPE))
 		return -1;
-	else if (input->IsKeyPressed(VK_RETURN))
+	else if (InputHandler::Instance().IsKeyPressed(VK_RETURN))
 		return currentOption;
 	else
 		return appID;
@@ -50,13 +50,13 @@ int MainMenu::Update()
  */
 void MainMenu::GameLogic()
 {
-	if (input->IsKeyPressed(VK_DOWN))
+	if (InputHandler::Instance().IsKeyPressed(VK_DOWN))
 	{
 		currentOption = (currentOption % numMenuOptions) + 1;
 		inputDelayCounter = 0;
 	}
 
-	if (input->IsKeyPressed(VK_UP))
+	if (InputHandler::Instance().IsKeyPressed(VK_UP))
 	{
 		--currentOption;
 		if (currentOption == 0)
@@ -72,15 +72,25 @@ void MainMenu::GameLogic()
  */
 void MainMenu::Draw()
 {
+	engine->ClearScreen();
+
 	// Draw Field
-	GameEngine::DrawRectFill(screenBuffer, screenWidth, screenHeight, 1, 1, menuWidth, menuHeight, '#');
+	engine->DrawRectFill(1, 1, menuWidth, menuHeight, '#');
 
 	// Draw Options
 	for (int i = 0; i < numMenuOptions; ++i)
-		GameEngine::DrawString(screenBuffer, screenWidth, screenHeight, 6, i + 3, menuOptions[i]);
+		engine->DrawString(6, i + 3, menuOptions[i]);
 
 	// Draw Arrow Cursor
-	GameEngine::DrawChar(screenBuffer, screenWidth, screenHeight, 4, currentOption + 2, '>');
+	engine->DrawChar(4, currentOption + 2, '>');
+
+	engine->DrawString(2, 20, L"Mouse X: " + std::to_wstring(InputHandler::Instance().GetMousePosition().x));
+	engine->DrawString(2, 21, L"Mouse Y: " + std::to_wstring(InputHandler::Instance().GetMousePosition().y));
+
+	if (InputHandler::Instance().IsMouseButtonHeld(0))
+		engine->DrawString(2, 22, L"Left Mouse Button: True");
+	else
+		engine->DrawString(2, 22, L"Left Mouse Button: False");
 }
 
 /*
@@ -97,6 +107,10 @@ void MainMenu::GenerateAssets()
 	menuOptions[3] = L"Bouncing Ball";
 	menuOptions[4] = L"Cellular Automata";
 	menuOptions[5] = L"Auto-Maze";
+	menuOptions[6] = L"Racing";
+	menuOptions[7] = L"Frogger";
+	menuOptions[8] = L"3D World";
+	menuOptions[9] = L"Side-Scroller";
 
 	int optionLength = 0;
 	for (int i = 0; i < numMenuOptions; ++i)
